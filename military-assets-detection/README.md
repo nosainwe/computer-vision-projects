@@ -1,55 +1,165 @@
-# 🎯 Military Assets Detection with YOLO11n
+# 🛰️ Aerial Military Asset Detection (YOLO11n)
 
-Detect military vehicles, soldiers, artillery, and aircraft in aerial/surveillance imagery using a fine‑tuned **YOLO11n (Nano)** model. This project is optimized for efficiency and speed while maintaining high accuracy on small objects typical in aerial reconnaissance.
+Detect objects such as **vehicles, personnel, and equipment** in aerial / surveillance images using a **fine‑tuned YOLO11n** model (Ultralytics).
 
-## 📂 Dataset
-This project uses the **[AMAD-5 (Aerial Military Asset Detection) Dataset](https://www.kaggle.com/datasets/amanbarthwal/amad-5-aerial-military-asset-detection)** from Kaggle.
-
-### **Classes**
-The model is trained to detect the following classes:
-1.  **Soldier** 💂
-2.  **Military Tank** 🚜
-3.  **Military Truck** 🚚
-4.  **Military Aircraft** ✈️
-5.  **Artillery** 💣
-
-### **Directory Structure**
-After downloading, extract the dataset into a `data/` folder so your project looks like this:
-
-├── data/
-│   └── amad-5/
-│       ├── train/
-│       │   ├── images/
-│       │   └── labels/
-│       ├── val/
-│       │   ├── images/
-│       │   └── labels/
-│       ├── test/
-│       │   ├── images/
-│       │   └── labels/
-│       └── data.yaml       <-- Ensure this points to the correct paths!
-├── runs/                   <-- Created automatically during training
-├── main.py
-├── requirements.txt
-└── README.md
+> ⚠️ **Responsible use**
+> This repository is for **computer‑vision learning and defensive/security research**. Do not use it to support harm, targeting, or wrongdoing.
 
 ---
 
-## 🛠️ Setup & Installation
+## 📦 Dataset
 
-### 1. Clone the Repository
+Your original dataset link (`amanbarthwal/amad-5-aerial-military-asset-detection`) currently returns **404 on Kaggle**, so it’s not reliable to share in a public README.
+
+✅ Use this active Kaggle dataset instead (YOLO format):
+- **Military Assets Dataset (12 Classes – YOLO format)**:  
+  https://www.kaggle.com/datasets/rawsi18/military-assets-dataset-12-classes-yolo8-format
+
+### Expected folder layout
+
+After downloading and extracting, place the dataset here:
+
+```text
+data/military-assets/
+├── train/
+│   ├── images/
+│   └── labels/
+├── val/
+│   ├── images/
+│   └── labels/
+├── test/
+│   ├── images/
+│   └── labels/
+└── dataset.yaml
+```
+
+Example `dataset.yaml` (edit paths/classes to match your dataset):
+
+```yaml
+path: data/military-assets
+train: train/images
+val: val/images
+test: test/images
+
+names:
+  0: soldier
+  1: vehicle
+  2: artillery
+  3: helicopter
+  4: tank
+  5: ship
+  6: aircraft
+  7: drone
+  8: weapon
+  9: radar
+  10: missile
+  11: other
+```
+
+> Note: class names vary by dataset version. Confirm yours by checking the provided `dataset.yaml`.
+
+---
+
+## ⚙️ Setup
+
+### 1) Create a virtual environment (recommended)
+
 ```bash
-git clone [https://github.com/yourusername/military-assets-detection.git](https://github.com/yourusername/military-assets-detection.git)
-cd military-assets-detection
-2. Install DependenciesIt is recommended to use a virtual environment.Bash# Create virtual env (optional)
-python -m venv venv
-source venv/bin/activate  # On Windows use: venv\Scripts\activate
+python -m venv .venv
+# Windows:
+# .venv\Scripts\activate
+# macOS/Linux:
+source .venv/bin/activate
+```
 
-# Install requirements
+### 2) Install dependencies
+
+```bash
 pip install -r requirements.txt
-Note: Ensure you have ultralytics, opencv-python, and pandas installed.🚀 Usage1. Training 🏋️Train the model from scratch (using pretrained weights). The script is configured to run for 20 epochs at an image size of 1024x1024 to better capture small aerial objects.Bashpython main.py --mode train
-Weights location: runs/detect/train/weights/best.ptLogs: Training curves and metrics are saved in runs/detect/train/2. Evaluation 📊Evaluate the model's performance on the test set to get metrics like mAP50 and mAP50-95.Bashpython main.py --mode evaluate
-3. Inference / Prediction 🔮Run detection on new images or videos.Single Image:Bashpython main.py --mode predict --source path/to/image.jpg
-Folder of Images:Bashpython main.py --mode predict --source data/amad-5/test/images/
-Video File:Bashpython main.py --mode predict --source path/to/video.mp4
-Results are saved in runs/detect/predict/.📈 ResultsAfter training for 20 epochs, the model achieves the following metrics on the validation set:MetricScoremAP @ 0.5~85%mAP @ 0.5:0.95~62%PrecisionHighRecallHigh(Note: These are estimated values. Check your specific results.csv in the runs folder for exact numbers.)🤝 AcknowledgementsYOLO11: Implementation by Ultralytics.Dataset: AMAD-5 by Aman Barthwal.📜 LicenseThis project is licensed under the MIT License.
+```
+
+---
+
+## 🏋️ Training
+
+Run training:
+
+```bash
+python main.py --mode train
+```
+
+Typical training defaults (adjust in `main.py` if needed):
+- Pretrained **YOLO11n** weights as a starting point
+- ~20 epochs (good baseline while learning)
+- 1024×1024 image size (helps with small objects in aerial views)
+
+📁 Outputs are saved under:
+
+```text
+runs/detect/train/
+└── weights/
+    ├── best.pt
+    └── last.pt
+```
+
+---
+
+## ✅ Evaluation
+
+Evaluate on the test split:
+
+```bash
+python main.py --mode evaluate
+```
+
+This should:
+- print mAP metrics (e.g., mAP@0.5, mAP@0.5:0.95)
+- save prediction visualisations to a `runs/` folder
+
+---
+
+## 🔎 Inference
+
+Run inference on a single image:
+
+```bash
+python main.py --mode predict --source path/to/image.jpg
+```
+
+Run inference on a folder:
+
+```bash
+python main.py --mode predict --source path/to/images/
+```
+
+Results will be saved to:
+
+```text
+runs/detect/predict/
+```
+
+---
+
+## 📊 Results (example)
+
+After ~20 epochs, a typical baseline can reach strong validation performance depending on class balance and image quality.
+
+> Replace this with your real numbers after you run training:
+- **mAP@0.5 (val):** `__`
+- **mAP@0.5:0.95 (val):** `__`
+
+---
+
+## 🧰 Tips to improve performance
+
+- ✅ Use **class rebalancing** if a few classes dominate
+- ✅ Try `yolo11s` or `yolo11m` if your GPU can handle it
+- ✅ Add augmentation for aerial views: rotation, scale, blur, haze
+- ✅ Check label quality — noisy labels destroy mAP faster than anything
+
+---
+
+## 🙏 Acknowledgements
+
+- **Ultralytics YOLO** (training/inference framework): https://github.com/ultralytics/ultralytics  
+- Dataset source (Kaggle): https://www.kaggle.com/datasets/rawsi18/military-assets-dataset-12-classes-yolo8-format
