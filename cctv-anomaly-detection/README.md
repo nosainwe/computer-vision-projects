@@ -2,7 +2,7 @@
 
 Unsupervised anomaly detection for surveillance videos using a **ConvLSTM Autoencoder**.
 
-The model learns to **reconstruct normal video clips**. When something unusual happens, reconstruction gets worse, and the **reconstruction error spikes** — those high-error frames are flagged as anomalies.
+The model learns to **reconstruct normal video clips**. When something unusual happens, reconstruction gets worse, and the **reconstruction error spikes** those high-error frames are flagged as anomalies.
 
 > ⚠️ **Responsible use**
 > This is for learning and defensive/security research. Make sure you have permission to use any footage, and follow privacy laws in your location.
