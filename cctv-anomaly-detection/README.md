@@ -39,7 +39,7 @@ You can change the video paths inside the script.
 Results
 The autoencoder learns to reconstruct normal scenes. Anomalous frames (e.g., assault) produce higher MSE, allowing detection.
 
-https://images/mse_plot.png (add a screenshot)
+
 
 How it works
 Extract 16 frames from a normal video, resize to 128×128.
