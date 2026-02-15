@@ -143,13 +143,3 @@ If you see very high accuracy (e.g., 90%+), double‑check:
 
 - Dataset: **Simuletic** (Kaggle) — https://www.kaggle.com/datasets/simuletic/cctv-weapon-dataset  
 - Transfer learning references: general Keras / TensorFlow examples and community tutorials.
-
----
-
-## 🧾 Notes on originality (recommended for a clean GitHub profile)
-
-If you started from a friend’s notebook, don’t pretend you wrote everything.  
-A strong and honest approach is:
-- keep attribution in the README,
-- explain what you changed (structure, experiments, evaluation, added scripts, better docs),
-- and commit your improvements clearly.
