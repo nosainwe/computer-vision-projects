@@ -116,11 +116,6 @@ Your accuracy will vary depending on:
 - how many “weapon” vs “no weapon” images are used
 - augmentation and training settings
 
-> Replace these with the numbers you actually get:
-- **Test accuracy:** `__`
-- **Precision / Recall:** `__ / __`
-- **Confusion matrix:** generated in the notebook
-
 ### Sanity checks (so your results are real)
 If you see very high accuracy (e.g., 90%+), double‑check:
 - **data leakage** (same or near-duplicate scenes in train/test)
