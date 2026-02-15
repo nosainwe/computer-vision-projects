@@ -13,7 +13,7 @@ The model learns to **reconstruct normal video clips**. When something unusual h
 - **Real Time Anomaly Detection in CCTV Surveillance** (Kaggle dataset)  
   https://www.kaggle.com/datasets/webadvisor/real-time-anomaly-detection-in-cctv-surveillance
 
-This dataset contains videos across multiple categories (normal events + different anomaly classes). citeturn0search2
+This dataset contains videos across multiple categories (normal events + different anomaly classes). 
 
 ### Expected folder structure
 
@@ -29,7 +29,7 @@ data/
 └── ...
 ```
 
-> The exact class folder names may differ slightly depending on the dataset version you download. citeturn0search2
+> The exact class folder names may differ slightly depending on the dataset version you download.
 
 ---
 
@@ -101,19 +101,15 @@ This method usually behaves like this:
 - It reconstructs the training “normal” scene well (low error).
 - When the test clip contains different motion/behaviour, error increases.
 
-> Replace this section with your real plots + numbers:
-- Example: reconstruction error curve (normal vs anomaly)
-- Threshold value used
-- % frames flagged
 
-### Devil’s advocate (important limitations)
+### Important limitations
 This simple baseline can trigger “false anomalies” when:
 - lighting changes suddenly (night/day, flicker)
 - camera shakes / zoom changes
 - heavy compression artifacts
 - the “normal” clip is too short or too specific (overfitting)
 
-If your script trains on a **single clip**, expect brittle behaviour — it’s great for learning, but not production-ready.
+If your script trains on a **single clip**, expect brittle behaviour, it’s great for learning, but not production-ready.
 
 ---
 
@@ -129,5 +125,5 @@ If your script trains on a **single clip**, expect brittle behaviour — it’s 
 
 ## 🙏 Acknowledgements
 
-- Dataset: Kaggle — **Real Time Anomaly Detection in CCTV Surveillance** citeturn0search2  
+- Dataset: Kaggle — **Real Time Anomaly Detection in CCTV Surveillance** 
 - Inspired by classic video anomaly detection work using reconstruction error + spatiotemporal models.
