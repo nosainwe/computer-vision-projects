@@ -162,4 +162,4 @@ If you’re seeing inflated numbers (like 94%+) on a small dataset, sanity‑che
 ## 🙏 Acknowledgements
 
 - **Ultralytics YOLO**: https://github.com/ultralytics/ultralytics  
-- Dataset: **Andrew Mvd**, Kaggle — https://www.kaggle.com/datasets/andrewmvd/car-plate-detection citeturn0search0
+- Dataset: **Andrew Mvd**, Kaggle — https://www.kaggle.com/datasets/andrewmvd/car-plate-detection
