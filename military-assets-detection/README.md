@@ -160,4 +160,5 @@ After ~20 epochs, a typical baseline can reach strong validation performance dep
 ## 🙏 Acknowledgements
 
 - **Ultralytics YOLO** (training/inference framework): https://github.com/ultralytics/ultralytics  
-- Dataset source (Kaggle): https://www.kaggle.com/datasets/rawsi18/military-assets-dataset-12-classes-yolo8-format
+- Dataset source (Kaggle): [https://www.kaggle.com/datasets/rawsi18/military-assets-dataset-12-classes-yolo8-format
+](https://www.kaggle.com/datasets/rupankarmajumdar/amad-5-aerial-military-asset-detection-dataset)
