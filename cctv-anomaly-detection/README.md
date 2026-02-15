@@ -10,10 +10,6 @@ The model learns to **reconstruct normal video clips**. When something unusual h
 ---
 
 ## 📦 Dataset
-
-Your original Kaggle link (`marwaelsheikh/real-time-anomaly-detection-in-cctv-surveillance`) doesn’t appear to be the current/active dataset page.
-
-✅ Use the active Kaggle dataset here:
 - **Real Time Anomaly Detection in CCTV Surveillance** (Kaggle dataset)  
   https://www.kaggle.com/datasets/webadvisor/real-time-anomaly-detection-in-cctv-surveillance
 
