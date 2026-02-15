@@ -96,18 +96,6 @@ The notebook should:
 - output accuracy + confusion matrix
 - show sample predictions
 
-### Option B — Run as a script (recommended for “portfolio”)
-
-If you have / plan to add a script entry point, the commands could look like:
-
-```bash
-python train.py --data_dir data/cctv-weapon-dataset --epochs 15
-python predict.py --weights weights/best.h5 --image path/to/image.jpg
-```
-
-> If you don’t have these scripts yet, keep the notebook path as the “official” run method in this README.
-
----
 
 ## 📊 Results (example)
 
