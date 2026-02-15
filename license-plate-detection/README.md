@@ -13,7 +13,7 @@ This project uses the Kaggle dataset:
 - **Car License Plate Detection** (Andrew Mvd):  
   https://www.kaggle.com/datasets/andrewmvd/car-plate-detection
 
-The dataset contains images with bounding‑box annotations for plates (VOC-style). citeturn0search0
+The dataset contains images with bounding‑box annotations for plates (VOC-style). 
 
 ### Recommended dataset layout (YOLO format)
 
@@ -33,7 +33,7 @@ data/license-plate-dataset/
 1. **Convert VOC → YOLO** (recommended)  
 2. Update `main.py` to read VOC XML directly (less common for Ultralytics)
 
-> Tip: if you want a dataset that is *already* in YOLO format, search Kaggle for “car licence plate detection YOLO” or use a YOLO-converted version. (Your repo can support either approach as long as the loader matches.)
+> Tip: if you want a dataset that is *already* in YOLO format, search Kaggle for “car licence plate detection YOLO” or use a YOLO-converted version. (My repo can support either approach as long as the loader matches.)
 
 ---
 
