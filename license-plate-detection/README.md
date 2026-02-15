@@ -47,9 +47,7 @@ The output video with detected plates will be saved as output_video.mp4.
 Results
 Test accuracy: ~94% mAP@0.5 (varies with dataset split).
 
-Sample detection on a test video:
 
-https://images/demo.gif (you can add a screenshot)
 
 Acknowledgements
 YOLO implementation by Ultralytics.
