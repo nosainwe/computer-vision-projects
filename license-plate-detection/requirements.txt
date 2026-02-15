@@ -1,0 +1,10 @@
+
+
+```txt
+ultralytics
+opencv-python
+matplotlib
+torch
+torchvision
+pillow
+numpy
