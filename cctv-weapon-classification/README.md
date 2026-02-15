@@ -17,7 +17,7 @@ Built with TensorFlow/Keras using transfer learning (MobileNetV2) and the synthe
 ## 🚀 Getting Started
 
 ### 1. Clone the repository
-    ```bash
+    
     git clone https://github.com/nosainwe/computer-vision-projects.git
 cd computer-vision-projects/cctv-weapon-classification
 2. Download the dataset
