@@ -6,14 +6,14 @@ Visualise **3D car poses** by projecting:
 
 using the **PKU/Baidu Autonomous Driving** Kaggle competition data (intrinsics + pose labels + car CAD models).
 
-> ✅ Portfolio angle: this shows you understand camera geometry, projection, and working with real dataset formats — not just running a detector.
+> ✅ Portfolio angle: this shows you understand camera geometry, projection, and working with real dataset formats - not just running a detector.
 
 ---
 
 ## 📦 Dataset
 
 This project uses the Kaggle competition data:
-- **Peking University/Baidu - Autonomous Driving** (competition page) citeturn0search0turn0search2
+- **Peking University/Baidu - Autonomous Driving**
 
 You’ll need:
 - `train.csv` (pose labels + PredictionString)
@@ -69,7 +69,7 @@ notebooks/3d_bounding_box_and_augmented_reality_pku.ipynb
 
 ✅ This notebook is the Kaggle version adapted to **local paths** (`data/pku-autonomous-driving/...`).
 
-### Option B — CLI demo (best for GitHub / quick checks)
+### Option B — CLI demo 
 
 Render 3D bounding boxes for one row from `train.csv`:
 
@@ -106,7 +106,7 @@ python -m src.visualize_3d_bbox --data_dir data/pku-autonomous-driving --row 400
 
 ---
 
-## 📌 Notes / limitations (so you don’t oversell)
+## 📌 Notes / limitations 
 
 - This is a **visualisation** pipeline, not a full detection model.
 - Results depend heavily on:
@@ -119,4 +119,4 @@ python -m src.visualize_3d_bbox --data_dir data/pku-autonomous-driving --row 400
 
 ## 🙏 Acknowledgements
 
-- Dataset and CAD models: Kaggle competition — **Peking University/Baidu - Autonomous Driving** citeturn0search0turn0search2
+- Dataset and CAD models: Kaggle competition — **Peking University/Baidu - Autonomous Driving**
