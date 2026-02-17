@@ -1,6 +1,6 @@
 # Computer Vision Projects
 
-A collection of computer vision projects demonstrating detection, classification, anomaly detection, and geometry-based visualisation. Each project is self-contained and includes setup + run instructions.
+A collection of computer vision projects I have worked on and learned from, demonstrating detection, classification, anomaly detection, and geometry-based visualisation. Each project is self-contained and includes setup + run instructions.
 
 ## Projects
 
