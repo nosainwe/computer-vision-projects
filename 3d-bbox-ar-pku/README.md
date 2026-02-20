@@ -11,7 +11,7 @@ using the **PKU/Baidu Autonomous Driving** Kaggle competition data (intrinsics +
 
 ## 📦 Dataset
 
-This project uses the Kaggle competition data:
+This project uses a dataset from kaggle:
 - **Peking University/Baidu - Autonomous Driving**
 
 You’ll need:
