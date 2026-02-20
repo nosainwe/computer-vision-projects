@@ -6,7 +6,6 @@ Visualise **3D car poses** by projecting:
 
 using the **PKU/Baidu Autonomous Driving** Kaggle competition data (intrinsics + pose labels + car CAD models).
 
-> ✅ Portfolio angle: this shows you understand camera geometry, projection, and working with real dataset formats - not just running a detector.
 
 ---
 
