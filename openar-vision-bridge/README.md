@@ -1,4 +1,4 @@
-OpenAR Vision Bridge (Virtual OLED HUD) — YOLO + 128×64 “Glasses View”
+OpenAR Vision Bridge (Virtual OLED HUD) - YOLO + 128×64 “Glasses View”
 ==========================================================================
 
 What this is
@@ -27,8 +27,8 @@ This repo shows that you understand:
 What you’ll see when you run it
 -------------------------------
 Two windows appear:
-1) “Computer Vision (Backend)” — normal webcam view with a single best detection box drawn.
-2) “OpenAR Glasses View (128x64)” — a pixelated black/white HUD rendered on a 128×64 canvas.
+1) “Computer Vision (Backend)” - normal webcam view with a single best detection box drawn.
+2) “OpenAR Glasses View (128x64)” - a pixelated black/white HUD rendered on a 128×64 canvas.
 
 Controls
 --------
