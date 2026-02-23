@@ -153,7 +153,7 @@ After ~20 epochs, a typical baseline can reach strong validation performance dep
 - ✅ Use **class rebalancing** if a few classes dominate
 - ✅ Try `yolo11s` or `yolo11m` if your GPU can handle it
 - ✅ Add augmentation for aerial views: rotation, scale, blur, haze
-- ✅ Check label quality — noisy labels destroy mAP faster than anything
+- ✅ Check label quality - noisy labels destroy mAP faster than anything
 
 ---
 
