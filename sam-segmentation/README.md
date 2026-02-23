@@ -1,4 +1,4 @@
-# 🧩 Segment Anything Model (SAM) — Zero‑Shot Interactive Segmentation
+# 🧩 Segment Anything Model (SAM) - Zero‑Shot Interactive Segmentation
 
 A practical, notebook-based implementation of **Meta AI’s Segment Anything Model (SAM)** — a promptable foundation model that can segment objects in images **without retraining**.
 
@@ -119,7 +119,7 @@ SAM typically produces strong masks with minimal prompting, especially for clear
 
 ## 🙏 Acknowledgements
 
-- Paper: **Segment Anything** — Kirillov et al. (2023)
+- Paper: **Segment Anything** - Kirillov et al. (2023)
 - SAM model + ecosystem by Meta AI
 - Inspiration: Mayank Pratap Singh and Sreedath Panat (article/tutorial)
 
