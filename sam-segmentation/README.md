@@ -124,10 +124,3 @@ SAM typically produces strong masks with minimal prompting, especially for clear
 - Inspiration: Mayank Pratap Singh and Sreedath Panat (article/tutorial)
 
 ---
-
-## 📎 Notes on originality (recommended)
-
-If you learned from a tutorial/article, keep attribution (as above) and make your repo stronger by adding:
-- clear setup steps,
-- your own test images,
-- a small CLI script (`predict.py`) so people can run SAM without opening Jupyter.
