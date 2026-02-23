@@ -84,7 +84,7 @@ data/cctv-weapon-dataset/
 
 ## 🚀 Run the project
 
-### Option A — Run the notebook (recommended for learning)
+### Option A - Run the notebook (recommended for learning)
 
 1. Launch Jupyter
 2. Open: `cctv_weapon_classification.ipynb`
@@ -124,5 +124,5 @@ If you see very high accuracy (e.g., 90%+), double‑check:
 
 ## 🙏 Acknowledgements
 
-- Dataset: **Simuletic** (Kaggle) — https://www.kaggle.com/datasets/simuletic/cctv-weapon-dataset  
+- Dataset: **Simuletic** (Kaggle) - https://www.kaggle.com/datasets/simuletic/cctv-weapon-dataset  
 - Transfer learning references: general Keras / TensorFlow examples and community tutorials.
