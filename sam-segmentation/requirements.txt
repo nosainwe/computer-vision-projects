@@ -1,0 +1,8 @@
+torch>=1.9.0
+transformers>=4.35.0
+opencv-python
+matplotlib
+pillow
+numpy
+requests
+gradio  # optional, for interactive demo
