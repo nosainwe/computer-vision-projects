@@ -125,5 +125,5 @@ If your script trains on a **single clip**, expect brittle behaviour, it’s gre
 
 ## 🙏 Acknowledgements
 
-- Dataset: Kaggle — **Real Time Anomaly Detection in CCTV Surveillance** 
+- Dataset: Kaggle - **Real Time Anomaly Detection in CCTV Surveillance** 
 - Inspired by classic video anomaly detection work using reconstruction error + spatiotemporal models.
