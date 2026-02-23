@@ -21,11 +21,11 @@ Each project is self-contained and includes setup + run instructions.
 ## What’s inside each project folder
 
 Each folder typically contains:
-- `README.md` — project overview, setup, usage, and notes
-- `requirements.txt` — Python dependencies
-- `main.py` and/or `.ipynb` — the entry point (script or notebook)
-- `src/` — helper code (if the project has a CLI/demo script)
-- `assets/` — optional outputs (GIFs/images), usually gitignored unless small and intentional
+- `README.md` - project overview, setup, usage, and notes
+- `requirements.txt` - Python dependencies
+- `main.py` and/or `.ipynb` - the entry point (script or notebook)
+- `src/` - helper code (if the project has a CLI/demo script)
+- `assets/` - optional outputs (GIFs/images), usually gitignored unless small and intentional
 
 Click any project above to see the details.
 
