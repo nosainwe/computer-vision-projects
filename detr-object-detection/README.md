@@ -1,6 +1,6 @@
 # 🧠 Object Detection with DETR (Detection Transformer)
 
-A practical, notebook-based implementation of **DETR (Detection Transformer)** — an end‑to‑end object detector that uses a **transformer set‑prediction** approach instead of hand-designed components like **anchor boxes** and **non‑maximum suppression (NMS)**.
+A practical, notebook-based implementation of **DETR (Detection Transformer)** - an end‑to‑end object detector that uses a **transformer set‑prediction** approach instead of hand-designed components like **anchor boxes** and **non‑maximum suppression (NMS)**.
 
 This project uses the **Hugging Face Transformers** library to load a **pre‑trained DETR model** and run inference on your own images.
 
@@ -125,15 +125,8 @@ A **Hungarian matching** step assigns predicted queries to ground-truth boxes so
 
 ## 🙏 Acknowledgements
 
-- Paper: **End‑to‑End Object Detection with Transformers (DETR)** — Carion et al. (2020)
+- Paper: **End‑to‑End Object Detection with Transformers (DETR)** - Carion et al. (2020)
 - Hugging Face Transformers (pre‑trained DETR model)
 - Inspiration: Mayank Pratap Singh and Sreedath Panat (article/tutorial)
 
 ---
-
-## 📎 Notes on originality (recommended)
-
-If you learned from an article or tutorial, keep that attribution (as above) and focus your commits on:
-- clearer structure,
-- reproducible setup,
-- your own experiments (thresholds, images, failures, improvements).
