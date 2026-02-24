@@ -26,7 +26,7 @@ This project uses the **Hugging Face Transformers** library to load a **pre‑tr
 
 ---
 
-## 🗂️ Repository structure (suggested)
+## 🗂️ Repository structure
 
 ```text
 detr-object-detection/
