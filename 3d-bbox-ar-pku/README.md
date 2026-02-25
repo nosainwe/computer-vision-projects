@@ -58,7 +58,7 @@ pip install -r requirements.txt
 
 ## 🚀 Run it
 
-### Option A — Notebook (best for learning)
+### Option A — Notebook
 
 Open and run:
 
