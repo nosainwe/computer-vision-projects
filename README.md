@@ -5,7 +5,7 @@ Each project is self-contained and includes setup + run instructions.
 
 ## Projects
 
-| Project | Description | Technologies |
+| Project | Description | Technologies |l
 |---------|-------------|--------------|
 | [🕶️ OpenAR Vision Bridge (Virtual OLED HUD)](./openar-vision-bridge/) | Runs object detection on a webcam feed, then distils results into a **128×64 monochrome HUD** (virtual OLED) to simulate embedded AR glasses output. Includes a script to export a **GIF/MP4** demo. | Ultralytics YOLO, OpenCV, NumPy |
 | [🧊 3D Bounding Boxes + AR Overlay (PKU/Baidu)](./3d-bbox-ar-pku/) | Projects **3D bounding boxes** (and optional CAD mesh) onto images using camera intrinsics + pose labels from the PKU/Baidu autonomous driving dataset. | NumPy, OpenCV, Pandas, Camera Geometry |
