@@ -1,8 +1,13 @@
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
+from tensorflow.keras.layers import (
+    BatchNormalization,
+    Conv3D,
+    ConvLSTM2D,
+    Input,
+)
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input, ConvLSTM2D, BatchNormalization, Conv3D
 
 # ---------------------------
 # Configuration
