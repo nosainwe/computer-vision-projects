@@ -25,7 +25,7 @@ Each folder typically contains:
 - `requirements.txt` - Python dependencies
 - `main.py` and/or `.ipynb` - the entry point (script or notebook)
 - `src/` - helper code (if the project has a CLI/demo script)
-- `assets/` - optional outputs (GIFs/images), usually gitignored unless small and intentional
+- `assets/` - optional outputs (GIFs/images), usually gitignored unless small and useful
 
 Click any project above to see the details.
 
