@@ -21,18 +21,29 @@ import numpy as np
 from ultralytics import YOLO
 
 
-def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser()
-    p.add_argument("--seconds", type=int, default=8, help="Length of demo recording.")
-    p.add_argument("--fps", type=int, default=12, help="Frames per second to save.")
-    p.add_argument("--camera", type=int, default=0, help="Webcam index (0, 1, ...).")
-    p.add_argument("--weights", type=str, default="yolov8n.pt", help="YOLO weights.")
-    p.add_argument("--scale", type=int, default=6, help="Upscale factor for OLED preview.")
-    p.add_argument("--out_mp4", type=str, default="demo_oled.mp4")
-    p.add_argument("--out_gif", type=str, default="demo_oled.gif")
-    p.add_argument("--conf", type=float, default=0.25, help="Detection confidence threshold.")
-    return p.parse_args()
+import argparse
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    
+    arguments = [
+        ("--seconds", int, 8, "Length of demo recording."),
+        ("--fps", int, 12, "Frames per second to save."),
+        ("--camera", int, 0, "Webcam index (0, 1, ...)."),
+        ("--weights", str, "yolov8n.pt", "YOLO weights."),
+        ("--scale", int, 6, "Upscale factor for OLED preview."),
+        ("--out_mp4", str, "demo_oled.mp4", None),
+        ("--out_gif", str, "demo_oled.gif", None),
+        ("--conf", float, 0.25, "Detection confidence threshold.")
+    ]
+    
+    for name, arg_type, default_val, help_text in arguments:
+        kwargs = {"type": arg_type, "default": default_val}
+        if help_text is not None:
+            kwargs["help"] = help_text
+        parser.add_argument(name, **kwargs)
+        
+    return parser.parse_args()
 
 def main() -> None:
     args = parse_args()
