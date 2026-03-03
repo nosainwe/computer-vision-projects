@@ -5,7 +5,7 @@ import shutil
 from pathlib import Path
 from ultralytics import YOLO
 
-DATA_ROOT = "data/amad-5"  # adjust if needed
+DATA_ROOT = "data/amad-5"  
 
 def train():
     """Train YOLO11n on AMAD-5 dataset."""
