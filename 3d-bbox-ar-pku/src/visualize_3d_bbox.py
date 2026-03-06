@@ -46,13 +46,13 @@ def draw_mesh(img: np.ndarray, verts2d: np.ndarray, triangles: np.ndarray) -> No
             continue
         cv2.fillConvexPoly(img, poly, (0, 255, 0), lineType=cv2.LINE_AA)
 
-
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Render 3D bounding boxes (and optional mesh) on PKU/Baidu images.")
     p.add_argument("--data_dir", type=str, required=True, help="Path to data/pku-autonomous-driving/")
     p.add_argument("--row", type=int, default=0, help="Row index in train.csv to visualise.")
     p.add_argument("--out", type=str, default="assets/output.jpg", help="Output image path.")
     p.add_argument("--imgsz", type=int, default=2, help="Line thickness scale (simple).")
+    # passing the model name not the full path — load_mesh handles the lookup internally
     p.add_argument("--mesh_model", type=str, default=None, help="Optional car model JSON name for mesh overlay (e.g. dazhongmaiteng).")
     return p.parse_args()
 
@@ -60,25 +60,30 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     data_dir = Path(args.data_dir)
+
+    # keeping these as explicit paths so it's obvious what structure this expects
     train_csv = data_dir / "train.csv"
     train_images = data_dir / "train_images"
     car_models = data_dir / "car_models_json"
 
+    # fail loud and early — better than silently loading nothing
     if not train_csv.exists():
         raise FileNotFoundError(f"Missing {train_csv}. Did you download the Kaggle competition data?")
     if not train_images.exists():
         raise FileNotFoundError(f"Missing {train_images}. Expected train_images/ folder.")
 
     df = pd.read_csv(train_csv)
+
+    # bounds check on row — easy mistake to make when iterating through examples
     if args.row < 0 or args.row >= len(df):
         raise ValueError(f"--row out of range. train.csv has {len(df)} rows.")
 
     image_id = df.loc[args.row, "ImageId"]
     pred_str = df.loc[args.row, "PredictionString"]
 
+    # try jpg first, fall back to png — some mirrors of this dataset use different extensions
     img_path = train_images / f"{image_id}.jpg"
     if not img_path.exists():
-        # sometimes png in some mirrors, try png
         alt = train_images / f"{image_id}.png"
         if alt.exists():
             img_path = alt
@@ -87,29 +92,35 @@ def main() -> None:
 
     img = cv2.imread(str(img_path))
     if img is None:
+        # imread returns None silently on failure, so catching it manually here
         raise RuntimeError(f"Could not read image: {img_path}")
 
     poses = parse_prediction_string(str(pred_str))
 
-    # generic car box size used in many baseline visualisations (approx)
-    box_corners = make_3d_box((1.8, 1.6, 4.0))  # (x,y,z) rough proportions
+    # rough car dimensions from baseline — (x, y, z) ~ width, height, length in meters
+    # not exact but close enough for visualization purposes
+    box_corners = make_3d_box((1.8, 1.6, 4.0))
 
     for pose in poses:
+        # build rotation from euler angles and translation from x, y, z
         R = euler_to_rot(pose.yaw, pose.pitch, pose.roll)
         t = np.array([pose.x, pose.y, pose.z], dtype=np.float32)
 
+        # project into 2D: world -> camera space -> pixel space
         corners_cam = transform_points(box_corners, R, t)
         corners_2d = project_points(corners_cam, K_DEFAULT)
 
         draw_box(img, corners_2d, thickness=max(1, args.imgsz))
 
-        # optional mesh overlay
+        # mesh overlay is optional — only runs if --mesh_model is passed
+        # useful for verifying the rotation looks right on a specific car body
         if args.mesh_model:
             verts, tris = load_mesh(car_models, args.mesh_model)
             verts_cam = transform_points(verts, R, t)
             verts_2d = project_points(verts_cam, K_DEFAULT)
             draw_mesh(img, verts_2d, tris)
 
+    # mkdir -p equivalent so i don't have to pre-create assets/ manually
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     cv2.imwrite(str(out_path), img)
