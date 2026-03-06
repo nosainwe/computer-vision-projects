@@ -19,6 +19,8 @@ from .utils import (
 )
 
 
+# these are the 12 edges of a cube — split into left face, right face, and the 4 connections between them
+# took me a minute to convince myself this is right, but it is
 BOX_EDGES = [
     (0, 1), (1, 2), (2, 3), (3, 0),  # left face
     (4, 5), (5, 6), (6, 7), (7, 4),  # right face
@@ -27,19 +29,19 @@ BOX_EDGES = [
 
 
 def draw_box(img: np.ndarray, pts2d: np.ndarray, color=(255, 0, 255), thickness=2) -> None:
+    # cast to int first or cv2 will complain — always forgets this
     pts = pts2d.astype(int)
     for a, b in BOX_EDGES:
         cv2.line(img, tuple(pts[a]), tuple(pts[b]), color, thickness, cv2.LINE_AA)
 
 
 def draw_mesh(img: np.ndarray, verts2d: np.ndarray, triangles: np.ndarray) -> None:
-    """
-    Simple triangle fill on the image. This is intentionally basic.
-    """
+    # intentionally basic — not doing depth sorting or lighting, just a flat green fill
+    # good enough for sanity checking poses, don't over-engineer this
     h, w = img.shape[:2]
     for tri in triangles:
         poly = verts2d[tri].astype(np.int32)
-        # skip triangles that are way out of bounds
+        # triangles way off screen will make fillConvexPoly do weird things, skip them
         if np.any(poly[:, 0] < -w) or np.any(poly[:, 0] > 2 * w) or np.any(poly[:, 1] < -h) or np.any(poly[:, 1] > 2 * h):
             continue
         cv2.fillConvexPoly(img, poly, (0, 255, 0), lineType=cv2.LINE_AA)
