@@ -22,3 +22,4 @@ Each folder typically contains:
 - `src/` - helper code (if the project has a CLI/demo script)
 - `assets/` - optional outputs (GIFs/images), usually gitignored unless small and useful
 Click any project above to see the details.
+---
