@@ -1,10 +1,7 @@
 # Computer Vision Projects
-
-A collection of computer vision projects I’ve worked on (and learned from), covering **detection**, **classification**, **segmentation**, **anomaly detection**, and **geometry-based visualisation**.  
+A collection of computer vision projects I've worked on (and learned from), covering **detection**, **classification**, **segmentation**, **anomaly detection**, and **geometry-based visualisation**.  
 Each project is self-contained and includes setup + run instructions.
-
 ## Projects
-
 | Project | Description | Technologies |
 |---------|-------------|--------------|
 | [🕶️ OpenAR Vision Bridge (Virtual OLED HUD)](./openar-vision-bridge/) | Runs object detection on a webcam feed, then distils results into a **128×64 monochrome HUD** (virtual OLED) to simulate embedded AR glasses output. Includes a script to export a **GIF/MP4** demo. | Ultralytics YOLO, OpenCV, NumPy |
@@ -15,21 +12,13 @@ Each project is self-contained and includes setup + run instructions.
 | [🚘 License Plate Detection](./license-plate-detection/) | Detect vehicle license plates in images/videos using a fine-tuned YOLO model. | Ultralytics YOLO, OpenCV, Python |
 | [🛰️ Aerial Object Detection](./military-assets-detection/) | Object detection in aerial imagery using a YOLO model (dataset-driven classes). | Ultralytics YOLO, OpenCV, Python |
 | [🧪 CCTV Threat-Object Classification](./cctv-weapon-classification/) | Binary classification of CCTV frames using transfer learning (MobileNetV2) to predict whether a threat object is present. | TensorFlow/Keras, OpenCV, Python |
-
+| [🔗 CLIP from Scratch](./clip-from-scratch/) | Ground-up implementation of **CLIP** — no OpenAI weights, no HuggingFace wrappers. ViT vision encoder (random init) + 1.5B causal LM (QLoRA 4-bit) contrastively trained on Flickr30k into a shared 512-dim embedding space. | PyTorch, PEFT, bitsandbytes, HuggingFace Transformers |
 ---
-
-## What’s inside each project folder
-
+## What's inside each project folder
 Each folder typically contains:
 - `README.md` - project overview, setup, usage, and notes
 - `requirements.txt` - Python dependencies
 - `main.py` and/or `.ipynb` - the entry point (script or notebook)
 - `src/` - helper code (if the project has a CLI/demo script)
 - `assets/` - optional outputs (GIFs/images), usually gitignored unless small and useful
-
 Click any project above to see the details.
-
----
-
-### Small pushback (so this lands better on GitHub)
-If you’re using this to apply for roles, don’t lead with “military/weapon” language on the front page. The code can stay the same, but neutral titles reduce friction and keep reviewers focused on your skills.
