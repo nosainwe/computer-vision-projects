@@ -1,0 +1,20 @@
+# Core
+torch>=2.0.0
+torchvision>=0.15.0
+
+# HuggingFace ecosystem
+transformers>=4.38.0
+peft>=0.10.0          # QLoRA / LoRA adapters
+bitsandbytes>=0.43.0  # 4-bit quantization backend
+accelerate>=0.27.0    # required by bitsandbytes + PEFT
+
+# Data
+Pillow>=10.0.0
+pandas>=2.0.0
+
+# Utilities
+tqdm>=4.65.0
+numpy>=1.24.0
+
+# Optional: for experiment tracking
+# wandb>=0.16.0
