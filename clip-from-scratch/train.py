@@ -11,7 +11,7 @@ Training loop:
     2. Encode images with ViT, encode captions with QLoRA LM
     3. Project both to 512-dim shared space
     4. Compute symmetric InfoNCE loss over (B x B) similarity matrix
-    5. Backprop — only LoRA adapters, projection heads, and ViT are updated
+    5. Backprop - only LoRA adapters, projection heads, and ViT are updated
        (quantized LM base weights are frozen by bitsandbytes)
 """
 
@@ -38,37 +38,37 @@ from src.dataset import get_dataloader
 def parse_args():
     p = argparse.ArgumentParser(description="Train CLIP from scratch on Flickr30k")
 
-    # Data
-    p.add_argument("--data_dir",    type=str, default="./data",
+    # data
+    p.add_argument("--data_dir",     type=str, default="./data",
                    help="Root dir containing flickr30k_images/ and results.csv")
-    p.add_argument("--num_workers", type=int, default=4)
+    p.add_argument("--num_workers",  type=int, default=4)
 
-    # Model
-    p.add_argument("--embed_dim",   type=int, default=512,
+    # model
+    p.add_argument("--embed_dim",    type=int, default=512,
                    help="Shared embedding dimension")
-    p.add_argument("--lora_rank",   type=int, default=16)
-    p.add_argument("--lora_alpha",  type=int, default=32)
-    p.add_argument("--max_text_len",type=int, default=77)
+    p.add_argument("--lora_rank",    type=int, default=16)
+    p.add_argument("--lora_alpha",   type=int, default=32)   # effective scale = alpha / rank = 2.0
+    p.add_argument("--max_text_len", type=int, default=77)   # matches original CLIP token limit
 
-    # Training
-    p.add_argument("--epochs",      type=int,   default=20)
-    p.add_argument("--batch_size",  type=int,   default=64)
-    p.add_argument("--lr",          type=float, default=1e-4)
-    p.add_argument("--weight_decay",type=float, default=0.1)
-    p.add_argument("--grad_clip",   type=float, default=1.0)
-    p.add_argument("--warmup_steps",type=int,   default=200,
+    # training
+    p.add_argument("--epochs",       type=int,   default=20)
+    p.add_argument("--batch_size",   type=int,   default=64)
+    p.add_argument("--lr",           type=float, default=1e-4)
+    p.add_argument("--weight_decay", type=float, default=0.1)
+    p.add_argument("--grad_clip",    type=float, default=1.0)  # keeps training stable, especially early on
+    p.add_argument("--warmup_steps", type=int,   default=200,
                    help="Linear LR warmup steps")
 
-    # Checkpointing
-    p.add_argument("--save_dir",    type=str,   default="./checkpoints")
-    p.add_argument("--save_every",  type=int,   default=5,
+    # checkpointing
+    p.add_argument("--save_dir",     type=str,   default="./checkpoints")
+    p.add_argument("--save_every",   type=int,   default=5,
                    help="Save checkpoint every N epochs")
-    p.add_argument("--resume",      type=str,   default=None,
+    p.add_argument("--resume",       type=str,   default=None,
                    help="Path to checkpoint directory to resume from")
 
-    # Misc
-    p.add_argument("--seed",        type=int,   default=42)
-    p.add_argument("--log_every",   type=int,   default=50,
+    # misc
+    p.add_argument("--seed",         type=int,   default=42)
+    p.add_argument("--log_every",    type=int,   default=50,
                    help="Log training stats every N steps")
 
     return p.parse_args()
@@ -79,6 +79,7 @@ def parse_args():
 # ---------------------------------------------------------------------------
 
 def set_seed(seed: int):
+    # seeding everything - torch, numpy, python random - so runs are reproducible
     import random, numpy as np
     random.seed(seed)
     np.random.seed(seed)
@@ -87,11 +88,12 @@ def set_seed(seed: int):
 
 
 def get_lr(optimizer) -> float:
+    # just grabbing from the first param group - they all share lr here
     return optimizer.param_groups[0]["lr"]
 
 
 def warmup_lr(step: int, warmup_steps: int, base_lr: float) -> float:
-    """Linear warmup schedule, used in the first warmup_steps steps."""
+    # linear ramp from 0 to base_lr over warmup_steps - prevents big loss spikes at the start
     if step < warmup_steps:
         return base_lr * (step + 1) / warmup_steps
     return base_lr
@@ -104,42 +106,45 @@ def warmup_lr(step: int, warmup_steps: int, base_lr: float) -> float:
 def train_one_epoch(model, loader, optimizer, criterion, device,
                     epoch, args, global_step):
     model.train()
-    total_loss = 0.0
+    total_loss    = 0.0
     total_acc_i2t = 0.0
     total_acc_t2i = 0.0
     n_batches = 0
     t0 = time.time()
 
     for batch_idx, batch in enumerate(loader):
-        images = batch["images"].to(device)
+        images   = batch["images"].to(device)
         captions = batch["captions"]
 
-        # Tokenize captions on-device via the text encoder's tokenizer
+        # tokenizing inside the loop so captions stay as strings until here - cleaner collation
         tokens = model.text_encoder.tokenize(captions, device)
 
-        # Forward
-        out = model(images, tokens["input_ids"], tokens["attention_mask"])
+        # forward pass - returns logits and temperature
+        out  = model(images, tokens["input_ids"], tokens["attention_mask"])
         loss = criterion(out["logits"])
 
-        # Backward
+        # backward
         optimizer.zero_grad()
         loss.backward()
+
+        # gradient clipping before the step - stops exploding gradients tanking early training
         if args.grad_clip > 0:
             nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
         optimizer.step()
 
-        # LR warmup (manual override for first warmup_steps)
+        # warmup overrides the cosine scheduler manually for the first warmup_steps
+        # doing it this way instead of a separate scheduler keeps things simple
         if global_step < args.warmup_steps:
             lr = warmup_lr(global_step, args.warmup_steps, args.lr)
             for pg in optimizer.param_groups:
                 pg["lr"] = lr
 
-        # Metrics
+        # tracking both directions - i2t and t2i can diverge, good to watch both
         accs = contrastive_accuracy(out["logits"])
-        total_loss     += loss.item()
-        total_acc_i2t  += accs["acc_i2t"]
-        total_acc_t2i  += accs["acc_t2i"]
-        n_batches += 1
+        total_loss    += loss.item()
+        total_acc_i2t += accs["acc_i2t"]
+        total_acc_t2i += accs["acc_t2i"]
+        n_batches   += 1
         global_step += 1
 
         if (batch_idx + 1) % args.log_every == 0:
@@ -149,23 +154,24 @@ def train_one_epoch(model, loader, optimizer, criterion, device,
                 f"| Loss {loss.item():.4f} "
                 f"| i2t {accs['acc_i2t']:.3f} "
                 f"| t2i {accs['acc_t2i']:.3f} "
-                f"| τ {out['temperature']:.4f} "
+                f"| τ {out['temperature']:.4f} "   # temperature is learnable - watch it doesn't collapse
                 f"| lr {get_lr(optimizer):.2e} "
                 f"| {elapsed:.1f}s"
             )
             t0 = time.time()
 
     return {
-        "loss":     total_loss / n_batches,
-        "acc_i2t":  total_acc_i2t / n_batches,
-        "acc_t2i":  total_acc_t2i / n_batches,
+        "loss":    total_loss / n_batches,
+        "acc_i2t": total_acc_i2t / n_batches,
+        "acc_t2i": total_acc_t2i / n_batches,
     }, global_step
 
 
 @torch.no_grad()
 def evaluate(model, loader, criterion, device):
+    # no_grad decorator handles the context - don't need to wrap the loop manually
     model.eval()
-    total_loss = 0.0
+    total_loss    = 0.0
     total_acc_i2t = 0.0
     total_acc_t2i = 0.0
     n_batches = 0
@@ -173,9 +179,9 @@ def evaluate(model, loader, criterion, device):
     for batch in loader:
         images = batch["images"].to(device)
         tokens = model.text_encoder.tokenize(batch["captions"], device)
-        out = model(images, tokens["input_ids"], tokens["attention_mask"])
-        loss = criterion(out["logits"])
-        accs = contrastive_accuracy(out["logits"])
+        out    = model(images, tokens["input_ids"], tokens["attention_mask"])
+        loss   = criterion(out["logits"])
+        accs   = contrastive_accuracy(out["logits"])
 
         total_loss    += loss.item()
         total_acc_i2t += accs["acc_i2t"]
@@ -202,27 +208,26 @@ def main():
     if device.type == "cuda":
         print(f"GPU: {torch.cuda.get_device_name(0)}")
 
-    # Data
     print("\nLoading dataset...")
     train_loader = get_dataloader(args.data_dir, "train",
                                   args.batch_size, args.num_workers)
     val_loader   = get_dataloader(args.data_dir, "val",
                                   args.batch_size, args.num_workers)
 
-    # Model
     print("\nBuilding model...")
     model = CLIPModel(
         embed_dim=args.embed_dim,
         lora_rank=args.lora_rank,
         lora_alpha=args.lora_alpha,
         max_text_len=args.max_text_len,
-    )
+    ).to(device)
 
     if args.resume:
         print(f"Resuming from {args.resume}")
         model.load(args.resume)
 
-    # Optimizer — apply weight decay only to non-bias, non-norm params
+    # splitting into two param groups so bias and norm weights skip weight decay
+    # applying decay to those hurts training - this is standard practice for transformers
     no_decay = {"bias", "LayerNorm.weight", "layer_norm.weight"}
     param_groups = [
         {"params": [p for n, p in model.named_parameters()
@@ -233,12 +238,13 @@ def main():
          "weight_decay": 0.0},
     ]
     optimizer = AdamW(param_groups, lr=args.lr)
+
+    # cosine decay after warmup - eta_min=1e-6 so lr doesn't fully bottom out
     scheduler = CosineAnnealingLR(optimizer, T_max=args.epochs, eta_min=1e-6)
     criterion = CLIPLoss()
 
-    # Training
     print(f"\nStarting training: {args.epochs} epochs\n{'='*60}")
-    global_step = 0
+    global_step  = 0
     best_val_loss = float("inf")
 
     for epoch in range(1, args.epochs + 1):
@@ -248,6 +254,8 @@ def main():
         )
 
         val_stats = evaluate(model, val_loader, criterion, device)
+
+        # scheduler steps after eval - one step per epoch, not per batch
         scheduler.step()
 
         print(
@@ -258,18 +266,20 @@ def main():
             f"Val t2i {val_stats['acc_t2i']:.3f}\n"
         )
 
-        # Save best checkpoint
+        # saving best by val loss - not train loss, not accuracy
         if val_stats["loss"] < best_val_loss:
             best_val_loss = val_stats["loss"]
             model.save(os.path.join(args.save_dir, "best"))
             print(f"  ✓ New best model saved (val_loss={best_val_loss:.4f})")
 
-        # Periodic save
+        # periodic checkpoint so i can recover from crashes mid-run
         if epoch % args.save_every == 0:
             model.save(os.path.join(args.save_dir, f"epoch_{epoch:02d}"))
             print(f"  ✓ Checkpoint saved: epoch_{epoch:02d}")
 
     print(f"\nTraining complete. Best val loss: {best_val_loss:.4f}")
+
+    # saving final regardless of whether it's the best - useful for resuming or analysis
     model.save(os.path.join(args.save_dir, "final"))
 
 
