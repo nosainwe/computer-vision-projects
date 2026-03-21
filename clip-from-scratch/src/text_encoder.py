@@ -24,31 +24,28 @@ from peft import get_peft_model, LoraConfig, TaskType, PeftModel
 
 BASE_MODEL_ID = "sihab/slm-1.0"
 
+
 # ---------------------------------------------------------------------------
 # QLoRA Configuration
 # ---------------------------------------------------------------------------
 
 def get_bnb_config() -> BitsAndBytesConfig:
-    """
-    4-bit NF4 quantization config.
-    NF4 (NormalFloat4) is information-theoretically optimal for
-    normally distributed weights — which most LLM weights are.
-    """
+    # NF4 is specifically designed for normally distributed weights — which LLM weights are
+    # double quantization quantizes the quantization constants themselves, saves ~0.4 bits/param
+    # bfloat16 compute keeps matmuls numerically stable while weights stay in 4-bit storage
     return BitsAndBytesConfig(
         load_in_4bit=True,
         bnb_4bit_quant_type="nf4",
-        bnb_4bit_use_double_quant=True,   # nested quantization saves ~0.4 bits/param
+        bnb_4bit_use_double_quant=True,
         bnb_4bit_compute_dtype=torch.bfloat16,
     )
 
 
 def get_lora_config(rank: int = 16, alpha: int = 32,
                     dropout: float = 0.05) -> LoraConfig:
-    """
-    LoRA adapter config.
-    We target the attention projection matrices (q, k, v, o) and
-    the MLP layers — standard practice for causal LMs.
-    """
+    # targeting all attention projections and MLP gate/up/down — standard for causal LMs
+    # FEATURE_EXTRACTION task type because we're pulling hidden states, not generating text
+    # bias="none" is standard — adding bias to LoRA layers doesn't help much and adds params
     return LoraConfig(
         task_type=TaskType.FEATURE_EXTRACTION,
         r=rank,
@@ -69,7 +66,7 @@ class TextEncoder(nn.Module):
     Wraps sihab/slm-1.0 (1.5B causal LM) with QLoRA adapters.
 
     Forward pass:
-        tokens → QLoRA-adapted LM → last-token hidden state → (B, hidden_dim)
+        tokens -> QLoRA-adapted LM -> last-token hidden state -> (B, hidden_dim)
     """
 
     def __init__(
@@ -78,34 +75,35 @@ class TextEncoder(nn.Module):
         lora_rank: int = 16,
         lora_alpha: int = 32,
         lora_dropout: float = 0.05,
-        max_length: int = 77,        # matches original CLIP
+        max_length: int = 77,        # matches original CLIP token limit
     ):
         super().__init__()
         self.max_length = max_length
 
-        # Tokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(model_id)
+        # causal LMs don't have a pad token by default — using eos as pad is the standard workaround
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
-        # Load base model in 4-bit
         print(f"Loading {model_id} in 4-bit NF4...")
         base = AutoModelForCausalLM.from_pretrained(
             model_id,
             quantization_config=get_bnb_config(),
-            device_map="auto",
+            device_map="auto",          # lets accelerate decide GPU/CPU placement automatically
             trust_remote_code=True,
         )
-        base.config.use_cache = False   # incompatible with gradient checkpointing
+        # use_cache caches key/value states for generation — incompatible with gradient checkpointing
+        base.config.use_cache = False
 
-        # Wrap with LoRA adapters
+        # wrapping base with LoRA — only adapter weights are trainable, base stays frozen in 4-bit
         self.model = get_peft_model(base, get_lora_config(lora_rank, lora_alpha, lora_dropout))
-        self.model.print_trainable_parameters()
+        self.model.print_trainable_parameters()   # sanity check: should be a small % of total
 
         self.hidden_dim = base.config.hidden_size
 
     def tokenize(self, texts: list[str], device: torch.device) -> dict:
-        """Tokenize a list of strings, pad/truncate to max_length."""
+        # padding to max_length so all sequences in a batch have the same shape
+        # truncation=True handles captions longer than 77 tokens — rare but possible
         return self.tokenizer(
             texts,
             padding="max_length",
@@ -127,30 +125,30 @@ class TextEncoder(nn.Module):
         outputs = self.model(
             input_ids=input_ids,
             attention_mask=attention_mask,
-            output_hidden_states=True,
+            output_hidden_states=True,  # need this to access intermediate layers, not just logits
             return_dict=True,
         )
 
-        # Last-token pooling: find the position of the last real token
-        # for each sequence and extract its hidden state.
+        # last layer hidden states — this is what carries the semantic representation
         last_hidden = outputs.hidden_states[-1]     # (B, seq_len, hidden_dim)
 
-        # Index of last non-padding token per sequence
-        seq_lengths = attention_mask.sum(dim=1) - 1  # (B,)
-        batch_idx = torch.arange(last_hidden.size(0), device=last_hidden.device)
-        pooled = last_hidden[batch_idx, seq_lengths]  # (B, hidden_dim)
+        # last-token pooling: sum attention mask to find where each sequence ends
+        # -1 converts length to 0-indexed position of the last real token
+        seq_lengths = attention_mask.sum(dim=1) - 1   # (B,)
+        batch_idx   = torch.arange(last_hidden.size(0), device=last_hidden.device)
+        pooled      = last_hidden[batch_idx, seq_lengths]   # (B, hidden_dim)
 
         return pooled
 
     # ------------------------------------------------------------------
     # Checkpoint helpers
-    # ⚠️  DO NOT use torch.save() on the full model — the 4-bit
-    #     quantized weights don't serialize cleanly.
-    #     Always save/load adapters separately.
+    # WARNING: do NOT use torch.save() on the full model — 4-bit quantized
+    # weights don't serialize cleanly through torch. always save adapters only.
     # ------------------------------------------------------------------
 
     def save(self, path: str):
-        """Save LoRA adapters only. Base model is reloaded fresh at load time."""
+        # saving adapters + tokenizer only — base model is re-quantized fresh at load time
+        # this keeps checkpoints small and avoids the quantization serialization issue
         self.model.save_pretrained(path)
         self.tokenizer.save_pretrained(path)
         print(f"LoRA adapters saved to {path}")
@@ -158,10 +156,8 @@ class TextEncoder(nn.Module):
     @classmethod
     def load(cls, adapter_path: str, model_id: str = BASE_MODEL_ID,
              **kwargs) -> "TextEncoder":
-        """
-        Reload by quantizing a fresh base and mounting saved adapters on top.
-        This is the correct pattern for QLoRA checkpoints.
-        """
+        # correct QLoRA reload pattern: quantize a fresh base, then mount saved adapters on top
+        # don't try to deserialize the quantized weights directly — re-quantize from fp16 each time
         instance = cls.__new__(cls)
         super(TextEncoder, instance).__init__()
 
@@ -175,7 +171,8 @@ class TextEncoder(nn.Module):
             device_map="auto",
             trust_remote_code=True,
         )
-        instance.model = PeftModel.from_pretrained(base, adapter_path)
+        # PeftModel.from_pretrained loads and attaches the saved LoRA weights onto the fresh base
+        instance.model      = PeftModel.from_pretrained(base, adapter_path)
         instance.hidden_dim = base.config.hidden_size
         instance.max_length = kwargs.get("max_length", 77)
 
