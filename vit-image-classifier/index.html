@@ -652,11 +652,11 @@
   <div class="samples-section">
     <h3>Try a sample</h3>
     <div class="sample-grid">
-      <div class="sample-thumb" title="Cat" onclick="loadSample('https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400', 'Cat')">🐱</div>
-      <div class="sample-thumb" title="Dog" onclick="loadSample('https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=400', 'Dog')">🐶</div>
-      <div class="sample-thumb" title="Bird" onclick="loadSample('https://images.unsplash.com/photo-1444464666168-49d633b86797?w=400', 'Bird')">🐦</div>
-      <div class="sample-thumb" title="Car" onclick="loadSample('https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=400', 'Car')">🚗</div>
-      <div class="sample-thumb" title="Flower" onclick="loadSample('https://images.unsplash.com/photo-1490750967868-88df5691cc37?w=400', 'Flower')">🌸</div>
+      <div class="sample-thumb" title="Cat" onclick="loadSample('https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat03.jpg/320px-Cat03.jpg', 'Cat')">🐱</div>
+      <div class="sample-thumb" title="Dog" onclick="loadSample('https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/YellowLabradorLooking_new.jpg/320px-YellowLabradorLooking_new.jpg', 'Dog')">🐶</div>
+      <div class="sample-thumb" title="Bird" onclick="loadSample('https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Macaw_superior.jpg/240px-Macaw_superior.jpg', 'Bird')">🦜</div>
+      <div class="sample-thumb" title="Car" onclick="loadSample('https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/2022_Tesla_Model_3_Highland_%28facelift%2C_blue%29%2C_front_8.28.23.jpg/320px-2022_Tesla_Model_3_Highland_%28facelift%2C_blue%29%2C_front_8.28.23.jpg', 'Car')">🚗</div>
+      <div class="sample-thumb" title="Flower" onclick="loadSample('https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Sunflower_from_Silesia2.jpg/320px-Sunflower_from_Silesia2.jpg', 'Sunflower')">🌻</div>
     </div>
   </div>
 
@@ -785,24 +785,1044 @@ async function loadSample(url, name) {
   document.getElementById('fileMeta').textContent = name;
   document.getElementById('sizeMeta').textContent = '—';
 
-  // Use a CORS proxy to fetch external images
-  const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(url)}`;
+  // Try multiple CORS proxies in order
+  const proxies = [
+    u => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
+    u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+    u => `https://cors-anywhere.herokuapp.com/${u}`,
+  ];
+
+  for (const makeProxy of proxies) {
+    try {
+      const resp = await fetch(makeProxy(url), { signal: AbortSignal.timeout(8000) });
+      if (!resp.ok) continue;
+      const blob = await resp.blob();
+      if (blob.size < 1000) continue; // too small = error page
+      currentBlob = blob;
+      const localUrl = URL.createObjectURL(blob);
+      document.getElementById('previewImg').src = localUrl;
+      document.getElementById('previewImg').onload = () => drawPatchGrid();
+      classify(blob, name);
+      return;
+    } catch (e) { continue; }
+  }
+
+  // All proxies failed — tell user to upload instead
+  showError('Sample images are blocked by your browser.\nPlease use "Choose File" or drag & drop your own image — that works perfectly!');
+}
+
+// ── File Handling ─────────────────────────────────────────────────────
+function handleFile(file) {
+  const url = URL.createObjectURL(file);
+  document.getElementById('previewImg').src = url;
+  document.getElementById('previewImg').onload = () => drawPatchGrid();
+  document.getElementById('fileMeta').textContent = file.name || 'image';
+  document.getElementById('sizeMeta').textContent = formatBytes(file.size);
+  currentBlob = file;
+  showResultsArea();
+  showLoading();
+  classify(file, file.name || 'image');
+}
+
+function formatBytes(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1024*1024) return (b/1024).toFixed(1) + ' KB';
+  return (b/1024/1024).toFixed(1) + ' MB';
+}
+
+function showResultsArea() {
+  const area = document.getElementById('results-area');
+  area.style.display = 'block';
+  area.classList.add('fade-in');
+}
+
+// ── Patch Grid Overlay ────────────────────────────────────────────────
+function drawPatchGrid() {
+  const img = document.getElementById('previewImg');
+  const card = document.getElementById('previewCard');
+  const canvas = document.getElementById('patchCanvas');
+  const overlay = document.getElementById('patchOverlay');
+
+  const w = img.offsetWidth;
+  const h = img.offsetHeight;
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, w, h);
+
+  const cols = 14, rows = 14; // 14x14 = 196 patches for 224px / 16px
+  const pw = w / cols;
+  const ph = h / rows;
+
+  ctx.strokeStyle = 'rgba(108,99,255,0.5)';
+  ctx.lineWidth = 0.8;
+
+  for (let r = 0; r <= rows; r++) {
+    ctx.beginPath(); ctx.moveTo(0, r*ph); ctx.lineTo(w, r*ph); ctx.stroke();
+  }
+  for (let c = 0; c <= cols; c++) {
+    ctx.beginPath(); ctx.moveTo(c*pw, 0); ctx.lineTo(c*pw, h); ctx.stroke();
+  }
+
+  // corner numbers
+  ctx.fillStyle = 'rgba(108,99,255,0.8)';
+  ctx.font = `${Math.max(6, pw*0.35)}px Space Mono`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  for (let r = 0; r < Math.min(rows, 4); r++) {
+    for (let c = 0; c < Math.min(cols, 4); c++) {
+      const n = r * cols + c + 1;
+      ctx.fillText(n, c*pw + pw/2, r*ph + ph/2);
+    }
+  }
+
+  overlay.style.height = h + 'px';
+
+  const visible = document.getElementById('patchToggle').checked;
+  overlay.classList.toggle('visible', visible);
+}
+
+document.getElementById('patchToggle').addEventListener('change', e => {
+  document.getElementById('patchOverlay').classList.toggle('visible', e.target.checked);
+});
+
+// ── Classify ──────────────────────────────────────────────────────────
+async function classify(blob, name) {
+  const key = document.getElementById('apiKey').value.trim();
+  if (!key) {
+    showError('Please enter your HuggingFace API token above.\nGet one free at huggingface.co/settings/tokens');
+    return;
+  }
 
   try {
-    const resp = await fetch(proxyUrl);
-    if (!resp.ok) throw new Error('Proxy fetch failed');
-    const blob = await resp.blob();
-    currentBlob = blob;
+    const resp = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': blob.type || 'image/jpeg',
+      },
+      body: blob,
+    });
 
-    // Show preview from local blob (avoids CORS on the img tag too)
-    const localUrl = URL.createObjectURL(blob);
-    document.getElementById('previewImg').src = localUrl;
-    document.getElementById('previewImg').onload = () => drawPatchGrid();
+    if (resp.status === 503) {
+      // Model loading
+      const text = await resp.text();
+      document.getElementById('predictionsContent').innerHTML = `
+        <div class="loader fade-in">
+          <div class="loader-bars">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <p>Model warming up (~20s)…</p>
+        </div>`;
+      setTimeout(() => classify(blob, name), 8000);
+      return;
+    }
 
-    classify(blob, name);
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.error || `HTTP ${resp.status}`);
+    }
+
+    const predictions = await resp.json();
+    showResults(predictions);
   } catch (err) {
-    showError('Could not load sample image. Please use "Choose File" to upload your own image instead.');
+    showError(err.message);
   }
+}
+
+async function classifyUrl(imageUrl, name) {
+  const key = document.getElementById('apiKey').value.trim();
+  if (!key) { showError('Please add your HuggingFace token.'); return; }
+  try {
+    const resp = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ inputs: imageUrl }),
+    });
+    const predictions = await resp.json();
+    if (Array.isArray(predictions)) showResults(predictions);
+    else showError(predictions.error || 'Could not classify this sample.');
+  } catch (err) { showError(err.message); }
+}
+
+// ── UI States ─────────────────────────────────────────────────────────
+function showLoading() {
+  document.getElementById('predictionsContent').innerHTML = `
+    <div class="loader fade-in">
+      <div class="loader-bars">
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+      <p>Classifying with ViT…</p>
+    </div>`;
+}
+
+function showError(msg) {
+  document.getElementById('predictionsContent').innerHTML = `
+    <div class="error-box fade-in">⚠ ${msg.replace(/\n/g,'<br>')}</div>`;
+}
+
+function showResults(predictions) {
+  const top5 = predictions.slice(0, 5);
+  const top = top5[0];
+  const pct = v => (v * 100).toFixed(1) + '%';
+  const clean = l => l.replace(/_/g, ' ').toLowerCase();
+
+  let html = `
+    <div class="top-label-banner fade-in">
+      <span class="trophy">🏆</span>
+      <div>
+        <div class="winner">${clean(top.label)}</div>
+        <div class="conf">${pct(top.score)} confidence</div>
+      </div>
+    </div>
+    <div class="predictions fade-in">
+  `;
+
+  for (const pred of top5) {
+    html += `
+      <div class="pred-item">
+        <div class="pred-top">
+          <span class="pred-label">${clean(pred.label)}</span>
+          <span class="pred-score">${pct(pred.score)}</span>
+        </div>
+        <div class="pred-bar-bg">
+          <div class="pred-bar-fill" data-width="${(pred.score * 100).toFixed(2)}%"></div>
+        </div>
+      </div>`;
+  }
+
+  html += `</div>`;
+  document.getElementById('predictionsContent').innerHTML = html;
+
+  // Animate bars
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.pred-bar-fill').forEach(el => {
+      el.style.width = el.dataset.width;
+    });
+  });
+}
+
+// Reset
+document.getElementById('resetBtn').addEventListener('click', () => {
+  document.getElementById('results-area').style.display = 'none';
+  document.getElementById('previewImg').src = '';
+  document.getElementById('patchToggle').checked = false;
+  document.getElementById('patchOverlay').classList.remove('visible');
+  currentBlob = null;
+});
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ViT Vision — Image Classifier</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --surface2: #1a1a26;
+      --border: #2a2a3e;
+      --accent: #6c63ff;
+      --accent2: #ff6584;
+      --accent3: #43e6b5;
+      --text: #e8e8f0;
+      --muted: #6b6b88;
+      --mono: 'Space Mono', monospace;
+      --sans: 'Syne', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(108,99,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(108,99,255,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Header ── */
+    header {
+      padding: 48px 0 32px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .logo-area h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1.1;
+    }
+    .logo-area h1 span.vit { color: var(--accent); }
+    .logo-area h1 span.vis { color: var(--accent3); }
+
+    .logo-area p {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 8px;
+      letter-spacing: 0.08em;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      padding: 5px 10px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--accent3);
+      background: rgba(67,230,181,0.06);
+      white-space: nowrap;
+      margin-top: 8px;
+    }
+    .badge .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent3);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity:1; transform: scale(1); }
+      50% { opacity:0.4; transform: scale(0.8); }
+    }
+
+    /* ── API Key Section ── */
+    .api-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .api-section label {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+
+    .api-section input {
+      flex: 1;
+      min-width: 200px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .api-section input:focus { border-color: var(--accent); }
+    .api-section input::placeholder { color: var(--muted); }
+
+    .api-hint {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      color: var(--muted);
+      width: 100%;
+      margin-top: -8px;
+    }
+    .api-hint a { color: var(--accent); text-decoration: none; }
+    .api-hint a:hover { text-decoration: underline; }
+
+    /* ── Upload Zone ── */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 16px;
+      padding: 56px 32px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+      background: var(--surface);
+    }
+
+    .upload-zone::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(108,99,255,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: var(--accent);
+      background: var(--surface2);
+    }
+    .upload-zone.drag-over { border-style: solid; }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 16px;
+      display: block;
+      filter: grayscale(0.3);
+    }
+
+    .upload-zone h2 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .upload-zone p {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .upload-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-family: var(--mono);
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      letter-spacing: 0.04em;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover { background: #7c75ff; transform: translateY(-1px); }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+    input[type="file"] { display: none; }
+
+    /* ── Preview + Results ── */
+    #results-area { display: none; margin-top: 28px; }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.4fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    @media (max-width: 600px) {
+      .results-grid { grid-template-columns: 1fr; }
+    }
+
+    .preview-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .preview-card img {
+      width: 100%;
+      display: block;
+      max-height: 280px;
+      object-fit: contain;
+      background: var(--bg);
+    }
+
+    .preview-meta {
+      padding: 12px 16px;
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    /* patch visualization */
+    .patch-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      bottom: 40px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+    .patch-overlay.visible { opacity: 1; }
+    .patch-overlay canvas { width: 100%; height: 100%; }
+
+    .patch-toggle {
+      margin-top: 10px;
+      width: 100%;
+    }
+    .patch-toggle label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .patch-toggle input[type="checkbox"] { accent-color: var(--accent); }
+
+    /* Results panel */
+    .results-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 22px;
+    }
+
+    .results-panel .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .panel-title {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .model-tag {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: var(--accent);
+      background: rgba(108,99,255,0.1);
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(108,99,255,0.2);
+    }
+
+    /* Loader */
+    .loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 32px 0;
+    }
+
+    .loader-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      height: 32px;
+    }
+    .loader-bars span {
+      width: 4px;
+      background: var(--accent);
+      border-radius: 2px;
+      animation: bar-dance 0.8s ease-in-out infinite;
+    }
+    .loader-bars span:nth-child(2) { animation-delay: 0.1s; background: var(--accent3); }
+    .loader-bars span:nth-child(3) { animation-delay: 0.2s; }
+    .loader-bars span:nth-child(4) { animation-delay: 0.3s; background: var(--accent2); }
+    .loader-bars span:nth-child(5) { animation-delay: 0.4s; }
+
+    @keyframes bar-dance {
+      0%, 100% { height: 8px; }
+      50% { height: 28px; }
+    }
+
+    .loader p {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    /* Prediction bars */
+    .predictions { display: flex; flex-direction: column; gap: 14px; }
+
+    .pred-item {}
+
+    .pred-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+    }
+
+    .pred-label {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text);
+      text-transform: capitalize;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 70%;
+    }
+
+    .pred-score {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .pred-bar-bg {
+      height: 6px;
+      background: var(--bg);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .pred-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      width: 0;
+    }
+
+    .pred-item:nth-child(1) .pred-bar-fill { background: linear-gradient(90deg, var(--accent), var(--accent3)); }
+    .pred-item:nth-child(2) .pred-bar-fill { background: linear-gradient(90deg, var(--accent3), #4af); }
+    .pred-item:nth-child(3) .pred-bar-fill { background: linear-gradient(90deg, #4af, var(--accent2)); }
+    .pred-item:nth-child(4) .pred-bar-fill { background: linear-gradient(90deg, var(--accent2), #fa0); }
+    .pred-item:nth-child(5) .pred-bar-fill { background: linear-gradient(90deg, #fa0, #f44); }
+
+    .top-label-banner {
+      padding: 10px 14px;
+      background: rgba(108,99,255,0.1);
+      border: 1px solid rgba(108,99,255,0.25);
+      border-radius: 8px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .top-label-banner .trophy { font-size: 1.1rem; }
+    .top-label-banner .winner {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--accent3);
+      text-transform: capitalize;
+    }
+    .top-label-banner .conf {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* Error */
+    .error-box {
+      background: rgba(255,101,132,0.08);
+      border: 1px solid rgba(255,101,132,0.3);
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--accent2);
+      line-height: 1.6;
+    }
+
+    /* Sample images */
+    .samples-section {
+      margin-top: 28px;
+    }
+    .samples-section h3 {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .sample-grid {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .sample-thumb {
+      width: 72px;
+      height: 72px;
+      border-radius: 8px;
+      border: 2px solid var(--border);
+      cursor: pointer;
+      overflow: hidden;
+      transition: border-color 0.2s, transform 0.2s;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+    }
+    .sample-thumb:hover { border-color: var(--accent); transform: scale(1.05); }
+    .sample-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* About section */
+    .about-section {
+      margin-top: 48px;
+      padding: 28px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+    .about-section h3 {
+      font-size: 1rem;
+      font-weight: 800;
+      margin-bottom: 12px;
+      color: var(--accent3);
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .about-section p {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 8px;
+    }
+    .about-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    .chip {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      color: var(--muted);
+    }
+
+    footer {
+      padding: 32px 0 48px;
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      color: var(--muted);
+    }
+
+    /* Animations */
+    .fade-in {
+      animation: fadeIn 0.4s ease both;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .reset-btn {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: color 0.2s;
+    }
+    .reset-btn:hover { color: var(--accent2); }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo-area">
+      <h1><span class="vit">ViT</span> <span class="vis">Vision</span></h1>
+      <p>// Vision Transformer · Image Classifier · google/vit-base-patch16-224</p>
+      <div class="badge"><span class="dot"></span> HuggingFace Inference API</div>
+    </div>
+  </header>
+
+  <!-- API Key -->
+  <div class="api-section">
+    <label>HF_TOKEN</label>
+    <input type="password" id="apiKey" placeholder="hf_xxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" />
+    <p class="api-hint">
+      Free key from <a href="https://huggingface.co/settings/tokens" target="_blank">huggingface.co/settings/tokens</a>
+      — read-only scope is sufficient.
+    </p>
+  </div>
+
+  <!-- Upload Zone -->
+  <div class="upload-zone" id="dropZone">
+    <span class="upload-icon">🔍</span>
+    <h2>Drop an image to classify</h2>
+    <p>Drag & drop · paste · or choose a file</p>
+    <div class="upload-actions">
+      <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+        📂 Choose File
+      </button>
+      <button class="btn btn-secondary" id="pasteBtn">
+        📋 Paste Image
+      </button>
+      <button class="btn btn-secondary" id="cameraBtn">
+        📷 Camera
+      </button>
+    </div>
+    <input type="file" id="fileInput" accept="image/*" />
+  </div>
+
+  <!-- Results -->
+  <div id="results-area">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+      <span style="font-family:var(--mono);font-size:0.65rem;color:var(--muted);">CLASSIFICATION RESULTS</span>
+      <button class="reset-btn" id="resetBtn">✕ clear</button>
+    </div>
+    <div class="results-grid">
+      <!-- Preview -->
+      <div>
+        <div class="preview-card" id="previewCard">
+          <div class="patch-overlay" id="patchOverlay">
+            <canvas id="patchCanvas"></canvas>
+          </div>
+          <img id="previewImg" src="" alt="Preview" />
+          <div class="preview-meta">
+            <span id="fileMeta">—</span>
+            <span id="sizeMeta">—</span>
+          </div>
+        </div>
+        <div class="patch-toggle">
+          <label>
+            <input type="checkbox" id="patchToggle" />
+            Show ViT patch grid (16×16)
+          </label>
+        </div>
+      </div>
+
+      <!-- Predictions -->
+      <div class="results-panel" id="resultsPanel">
+        <div class="panel-header">
+          <span class="panel-title">Predictions</span>
+          <span class="model-tag">vit-base-patch16-224</span>
+        </div>
+        <div id="predictionsContent">
+          <!-- filled by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sample Images -->
+  <div class="samples-section">
+    <h3>Try a sample</h3>
+    <div class="sample-grid">
+      <div class="sample-thumb" title="Cat" onclick="loadSample('https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat03.jpg/320px-Cat03.jpg', 'Cat')">🐱</div>
+      <div class="sample-thumb" title="Dog" onclick="loadSample('https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/YellowLabradorLooking_new.jpg/320px-YellowLabradorLooking_new.jpg', 'Dog')">🐶</div>
+      <div class="sample-thumb" title="Bird" onclick="loadSample('https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Macaw_superior.jpg/240px-Macaw_superior.jpg', 'Bird')">🦜</div>
+      <div class="sample-thumb" title="Car" onclick="loadSample('https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/2022_Tesla_Model_3_Highland_%28facelift%2C_blue%29%2C_front_8.28.23.jpg/320px-2022_Tesla_Model_3_Highland_%28facelift%2C_blue%29%2C_front_8.28.23.jpg', 'Car')">🚗</div>
+      <div class="sample-thumb" title="Flower" onclick="loadSample('https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Sunflower_from_Silesia2.jpg/320px-Sunflower_from_Silesia2.jpg', 'Sunflower')">🌻</div>
+    </div>
+  </div>
+
+  <!-- About -->
+  <div class="about-section">
+    <h3>How it works</h3>
+    <p>
+      Vision Transformers (ViT) divide an image into a fixed grid of patches (16×16 pixels each), flatten them into
+      vectors, and feed them to a standard Transformer encoder — just like words in a sentence. The model uses
+      <strong>global self-attention</strong> from the very first layer, allowing any patch to directly attend to
+      every other patch.
+    </p>
+    <p>
+      This classifier uses <strong>google/vit-base-patch16-224</strong> — pretrained on ImageNet-21k and fine-tuned on
+      ImageNet-1k — via the HuggingFace Inference API. The model outputs top-5 class probabilities across
+      1,000 ImageNet categories.
+    </p>
+    <div class="about-chips">
+      <span class="chip">Patch size: 16×16</span>
+      <span class="chip">Input: 224×224</span>
+      <span class="chip">Patches: 196 + 1 CLS</span>
+      <span class="chip">Embed dim: 768</span>
+      <span class="chip">Heads: 12</span>
+      <span class="chip">Layers: 12</span>
+      <span class="chip">Params: 86M</span>
+      <span class="chip">Classes: 1,000</span>
+    </div>
+  </div>
+
+  <footer>
+    Built to explore Vision Transformers · Model: google/vit-base-patch16-224 · HuggingFace Inference API
+  </footer>
+
+</div>
+
+<!-- Camera modal -->
+<div id="cameraModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1000; align-items:center; justify-content:center; flex-direction:column; gap:20px;">
+  <video id="cameraFeed" autoplay playsinline style="max-width:90vw; max-height:70vh; border-radius:12px; border:2px solid var(--accent);"></video>
+  <div style="display:flex; gap:12px;">
+    <button class="btn btn-primary" onclick="capturePhoto()">📸 Capture</button>
+    <button class="btn btn-secondary" onclick="closeCamera()">✕ Cancel</button>
+  </div>
+  <canvas id="captureCanvas" style="display:none;"></canvas>
+</div>
+
+<script>
+const MODEL = 'google/vit-base-patch16-224';
+const API_URL = `https://router.huggingface.co/hf-inference/models/${MODEL}`;
+
+let currentBlob = null;
+let currentStream = null;
+
+// ── Drag & Drop ──────────────────────────────────────────────────────
+const dropZone = document.getElementById('dropZone');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) handleFile(file);
+});
+dropZone.addEventListener('click', e => {
+  if (!e.target.closest('.btn')) document.getElementById('fileInput').click();
+});
+
+document.getElementById('fileInput').addEventListener('change', e => {
+  if (e.target.files[0]) handleFile(e.target.files[0]);
+});
+
+// ── Paste ────────────────────────────────────────────────────────────
+document.addEventListener('paste', e => {
+  const items = e.clipboardData?.items;
+  if (!items) return;
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      handleFile(item.getAsFile());
+      break;
+    }
+  }
+});
+document.getElementById('pasteBtn').addEventListener('click', async () => {
+  try {
+    const [item] = await navigator.clipboard.read();
+    for (const t of item.types) {
+      if (t.startsWith('image/')) {
+        const blob = await item.getType(t);
+        handleFile(blob);
+        return;
+      }
+    }
+    alert('No image in clipboard. Try Ctrl+V with an image copied.');
+  } catch {
+    alert('Paste an image with Ctrl+V (or Cmd+V) anywhere on the page.');
+  }
+});
+
+// ── Camera ───────────────────────────────────────────────────────────
+document.getElementById('cameraBtn').addEventListener('click', async () => {
+  try {
+    currentStream = await navigator.mediaDevices.getUserMedia({ video: true });
+    document.getElementById('cameraFeed').srcObject = currentStream;
+    document.getElementById('cameraModal').style.display = 'flex';
+  } catch { alert('Camera access denied or not available.'); }
+});
+function closeCamera() {
+  if (currentStream) { currentStream.getTracks().forEach(t => t.stop()); currentStream = null; }
+  document.getElementById('cameraModal').style.display = 'none';
+}
+function capturePhoto() {
+  const video = document.getElementById('cameraFeed');
+  const canvas = document.getElementById('captureCanvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  canvas.toBlob(blob => {
+    closeCamera();
+    handleFile(blob);
+  }, 'image/jpeg', 0.92);
+}
+
+// ── Sample images ─────────────────────────────────────────────────────
+async function loadSample(url, name) {
+  showLoading();
+  showResultsArea();
+  document.getElementById('fileMeta').textContent = name;
+  document.getElementById('sizeMeta').textContent = '—';
+
+  // Try multiple CORS proxies in order
+  const proxies = [
+    u => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
+    u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+    u => `https://cors-anywhere.herokuapp.com/${u}`,
+  ];
+
+  for (const makeProxy of proxies) {
+    try {
+      const resp = await fetch(makeProxy(url), { signal: AbortSignal.timeout(8000) });
+      if (!resp.ok) continue;
+      const blob = await resp.blob();
+      if (blob.size < 1000) continue; // too small = error page
+      currentBlob = blob;
+      const localUrl = URL.createObjectURL(blob);
+      document.getElementById('previewImg').src = localUrl;
+      document.getElementById('previewImg').onload = () => drawPatchGrid();
+      classify(blob, name);
+      return;
+    } catch (e) { continue; }
+  }
+
+  // All proxies failed — tell user to upload instead
+  showError('Sample images are blocked by your browser.\nPlease use "Choose File" or drag & drop your own image — that works perfectly!');
 }
 
 // ── File Handling ─────────────────────────────────────────────────────
