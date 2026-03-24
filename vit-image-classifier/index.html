@@ -652,11 +652,11 @@
   <div class="samples-section">
     <h3>Try a sample</h3>
     <div class="sample-grid">
-      <div class="sample-thumb" title="Cat" onclick="loadSample('https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Cat_November_2010-1a.jpg/320px-Cat_November_2010-1a.jpg', 'Cat')">🐱</div>
-      <div class="sample-thumb" title="Dog" onclick="loadSample('https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/YellowLabradorLooking_new.jpg/320px-YellowLabradorLooking_new.jpg', 'Dog')">🐶</div>
-      <div class="sample-thumb" title="Bird" onclick="loadSample('https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Camponotus_flavomarginatus_ant.jpg/320px-Camponotus_flavomarginatus_ant.jpg', 'Ant')">🐜</div>
-      <div class="sample-thumb" title="Car" onclick="loadSample('https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Dog_Breeds.jpg/320px-Dog_Breeds.jpg', 'Dogs')">🐕</div>
-      <div class="sample-thumb" title="Flower" onclick="loadSample('https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Sunflower_from_Silesia2.jpg/320px-Sunflower_from_Silesia2.jpg', 'Sunflower')">🌻</div>
+      <div class="sample-thumb" title="Cat" onclick="loadSample('https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400', 'Cat')">🐱</div>
+      <div class="sample-thumb" title="Dog" onclick="loadSample('https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=400', 'Dog')">🐶</div>
+      <div class="sample-thumb" title="Bird" onclick="loadSample('https://images.unsplash.com/photo-1444464666168-49d633b86797?w=400', 'Bird')">🐦</div>
+      <div class="sample-thumb" title="Car" onclick="loadSample('https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=400', 'Car')">🚗</div>
+      <div class="sample-thumb" title="Flower" onclick="loadSample('https://images.unsplash.com/photo-1490750967868-88df5691cc37?w=400', 'Flower')">🌸</div>
     </div>
   </div>
 
@@ -704,7 +704,7 @@
 
 <script>
 const MODEL = 'google/vit-base-patch16-224';
-const API_URL = `https://api-inference.huggingface.co/models/${MODEL}`;
+const API_URL = `https://router.huggingface.co/hf-inference/models/${MODEL}`;
 
 let currentBlob = null;
 let currentStream = null;
@@ -784,18 +784,24 @@ async function loadSample(url, name) {
   showResultsArea();
   document.getElementById('fileMeta').textContent = name;
   document.getElementById('sizeMeta').textContent = '—';
-  document.getElementById('previewImg').src = url;
-  document.getElementById('previewImg').onload = () => drawPatchGrid();
 
-  // fetch via proxy approach — convert to blob
+  // Use a CORS proxy to fetch external images
+  const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(url)}`;
+
   try {
-    const resp = await fetch(url);
+    const resp = await fetch(proxyUrl);
+    if (!resp.ok) throw new Error('Proxy fetch failed');
     const blob = await resp.blob();
     currentBlob = blob;
+
+    // Show preview from local blob (avoids CORS on the img tag too)
+    const localUrl = URL.createObjectURL(blob);
+    document.getElementById('previewImg').src = localUrl;
+    document.getElementById('previewImg').onload = () => drawPatchGrid();
+
     classify(blob, name);
-  } catch {
-    // fallback: try direct API with URL (some endpoints accept it)
-    classifyUrl(url, name);
+  } catch (err) {
+    showError('Could not load sample image. Please use "Choose File" to upload your own image instead.');
   }
 }
 
