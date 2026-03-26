@@ -1,6 +1,6 @@
-# 🚗 License Plate Detection (YOLO11n)
+# 🚗 License Plate Detection + OCR (YOLO11n)
 
-Detect **vehicle license plates** in **images and videos** using a fine‑tuned **YOLO11n** model (Ultralytics).
+Detect **vehicle license plates** in videos using a fine-tuned **YOLO11n** model (Ultralytics), with optional **EasyOCR** to read the plate text directly from detections.
 
 > 🔒 **Privacy note**
 > License plates are personal data in many places. Use this project responsibly, and only on footage you have the right to process.
@@ -13,11 +13,9 @@ This project uses the Kaggle dataset:
 - **Car License Plate Detection** (Andrew Mvd):  
   https://www.kaggle.com/datasets/andrewmvd/car-plate-detection
 
-The dataset contains images with bounding‑box annotations for plates (VOC-style). 
+The dataset contains images with bounding-box annotations for plates (VOC-style).
 
 ### Recommended dataset layout (YOLO format)
-
-If your training code expects YOLO-style labels (`.txt`) split into train/val, organise it like this:
 
 ```text
 data/license-plate-dataset/
@@ -30,10 +28,10 @@ data/license-plate-dataset/
 ```
 
 ✅ If the dataset downloads with XML annotations, you have two options:
-1. **Convert VOC → YOLO** (recommended)  
-2. Update `main.py` to read VOC XML directly (less common for Ultralytics)
+1. **Convert VOC → YOLO** (recommended)
+2. Update `license_plate.py` to read VOC XML directly (less common for Ultralytics)
 
-> Tip: if you want a dataset that is *already* in YOLO format, search Kaggle for “car licence plate detection YOLO” or use a YOLO-converted version. (My repo can support either approach as long as the loader matches.)
+> Tip: if you want a dataset already in YOLO format, search Kaggle for "car licence plate detection YOLO".
 
 ---
 
@@ -43,10 +41,10 @@ data/license-plate-dataset/
 
 ```bash
 python -m venv .venv
-# Windows:
-# .venv\Scripts\activate
 # macOS/Linux:
 source .venv/bin/activate
+# Windows:
+# .venv\Scripts\activate
 ```
 
 ### 2) Install dependencies
@@ -54,6 +52,14 @@ source .venv/bin/activate
 ```bash
 pip install -r requirements.txt
 ```
+
+For OCR support, also install:
+
+```bash
+pip install easyocr
+```
+
+> EasyOCR is optional — detection and crop saving work without it.
 
 ### 3) Download and place the dataset
 
@@ -67,16 +73,17 @@ data/license-plate-dataset/
 
 ## 🏋️ Training
 
-Run training:
-
 ```bash
-python main.py --mode train
+python license_plate.py --mode train
 ```
 
-Typical training behaviour (adjust in `main.py` if needed):
-- loads a pretrained **YOLO11n** checkpoint
-- trains for **50 epochs** (solid baseline for a small dataset)
-- saves weights to:
+Optional overrides:
+
+```bash
+python license_plate.py --mode train --epochs 100 --batch 16 --imgsz 640
+```
+
+Trains a pretrained YOLO11n checkpoint for 50 epochs by default. Weights saved to:
 
 ```text
 runs/detect/train/weights/
@@ -86,80 +93,72 @@ runs/detect/train/weights/
 
 ---
 
-## ✅ Evaluation (optional but recommended)
-
-If your `main.py` supports evaluation:
-
-```bash
-python main.py --mode evaluate
-```
-
-This should output metrics like:
-- **mAP@0.5**
-- **mAP@0.5:0.95**
-
-…and optionally save sample predictions.
-
----
-
 ## 🎥 Inference on Video
 
-Run inference on a video:
+Basic detection:
 
 ```bash
-python main.py --mode predict --video path/to/video.mp4
+python license_plate.py --mode predict --video path/to/video.mp4
 ```
 
-Expected output:
-- An output video with bounding boxes (e.g., `output_video.mp4`)
-- Or results saved under:
+With a custom confidence threshold:
 
-```text
-runs/detect/predict/
+```bash
+python license_plate.py --mode predict --video path/to/video.mp4 --conf 0.5
 ```
 
-(Exact output location depends on how `main.py` is implemented.)
+Skip saving plate crops:
+
+```bash
+python license_plate.py --mode predict --video path/to/video.mp4 --no-crops
+```
+
+### Outputs
+
+| Output | Description |
+|--------|-------------|
+| `output_video.mp4` | Annotated video with bounding boxes and labels |
+| `detected_plates/plate_00000.jpg` | Cropped plate images (one per detection) |
+| Console OCR log | Frame index, crop filename, and read plate text |
+
+If EasyOCR is installed, detected plate text is overlaid in the bounding box label and printed as a summary at the end of the run.
 
 ---
 
-## 📸 Inference on Images
+## 🔍 CLI Reference
 
-Single image:
-
-```bash
-python main.py --mode predict --source path/to/image.jpg
-```
-
-Folder:
-
-```bash
-python main.py --mode predict --source path/to/images/
-```
+| Argument | Default | Description |
+|----------|---------|-------------|
+| `--mode` | required | `train` or `predict` |
+| `--video` | — | Path to input video (predict mode) |
+| `--conf` | `0.45` | Detection confidence threshold |
+| `--no-crops` | off | Disable saving plate crops |
+| `--epochs` | `50` | Training epochs |
+| `--batch` | `32` | Batch size |
+| `--imgsz` | `640` | Input image size |
 
 ---
 
-## 📊 Results (example)
+## 📊 Results
 
-Performance varies depending on split, label quality, and training settings.
-
-
-If you’re seeing inflated numbers (like 94%+) on a small dataset, sanity‑check:
+Performance varies depending on split quality, label conversion, and training settings. If you're seeing inflated numbers (94%+) on a small dataset, sanity-check for:
 - data leakage (same scenes in train/val)
 - duplicate images across splits
-- label conversion errors (bad normalisation)
+- label normalisation errors from VOC → YOLO conversion
 
 ---
 
-## 🧰 Practical improvements
+## 🧰 Further improvements
 
-- ✅ Increase robustness with augmentations: motion blur, glare, low-light, rain, occlusion  
-- ✅ Use a larger model (`yolo11s`) if your GPU allows  
-- ✅ Add a second stage: **plate text recognition** (EasyOCR / Tesseract)  
-- ✅ Evaluate on *new videos* (not just the dataset split)
+- Use a larger backbone (`yolo11s`, `yolo11m`) if your GPU allows
+- Add motion blur, glare, and low-light augmentations for real-world robustness
+- Fine-tune OCR with a plate-specific EasyOCR model for higher read accuracy
+- Evaluate on new, unseen video footage — not just the dataset split
 
 ---
 
 ## 🙏 Acknowledgements
 
-- **Ultralytics YOLO**: https://github.com/ultralytics/ultralytics  
+- **Ultralytics YOLO**: https://github.com/ultralytics/ultralytics
 - Dataset: **Andrew Mvd**, Kaggle — https://www.kaggle.com/datasets/andrewmvd/car-plate-detection
+- OCR: **EasyOCR** — https://github.com/JaidedAI/EasyOCR
