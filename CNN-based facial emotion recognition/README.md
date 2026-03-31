@@ -1,112 +1,103 @@
 # 😠😄😨 Facial Emotion Recognition (CNN + FER-2013)
 
-Custom CNN trained from scratch to classify facial expressions into 7
-emotion categories using the FER-2013 benchmark dataset.
+Custom CNN trained from scratch to classify facial expressions into 7 emotion categories using the FER-2013 benchmark dataset.
 
-**\~66--67% validation accuracy**, aligned with standard CNN baselines
-on this dataset.
+**Achieves ~66–67% validation accuracy** - consistent with published results for CNN baselines on this dataset.
 
-------------------------------------------------------------------------
+## Classes
 
-## 🔥 Features
+| Label | Emotion |
+|-------|---------|
+| 0 | Angry |
+| 1 | Disgust |
+| 2 | Fear |
+| 3 | Happy |
+| 4 | Neutral |
+| 5 | Sad |
+| 6 | Surprise |
 
--   🧠 Custom CNN (no transfer learning)
--   🎯 Class imbalance handling (weighted loss)
--   📊 Evaluation: confusion matrix + classification report\
--   🖼️ Grad-CAM visual explanations (model interpretability)
--   🎥 Real-time webcam emotion detection
--   📉 Training curves (accuracy + loss)
+## Dataset
 
-------------------------------------------------------------------------
-
-## 🎭 Classes
-
-  Label   Emotion
-  ------- ----------
-  0       Angry
-  1       Disgust
-  2       Fear
-  3       Happy
-  4       Neutral
-  5       Sad
-  6       Surprise
-
-------------------------------------------------------------------------
-
-## 📂 Dataset
-
-**FER-2013 --- Facial Expression Recognition 2013**\
+**FER-2013** - Facial Expression Recognition 2013  
 https://www.kaggle.com/datasets/msambare/fer2013
 
--   48×48 grayscale images\
--   28,709 training / 3,589 test\
--   Highly imbalanced (Disgust is rare)
+- 48×48 grayscale images
+- 28,709 training samples / 3,589 test samples
+- Class-imbalanced (Disgust is severely underrepresented)
 
-### Expected structure
+Expected layout after download:
 
-fer2013/ ├── train/ │ ├── angry/ │ ├── disgust/ │ ├── fear/ │ ├── happy/
-│ ├── neutral/ │ ├── sad/ │ └── surprise/ └── test/ └── (same structure)
+```
+fer2013/
+├── train/
+│   ├── angry/
+│   ├── disgust/
+│   ├── fear/
+│   ├── happy/
+│   ├── neutral/
+│   ├── sad/
+│   └── surprise/
+└── test/
+    └── (same structure)
+```
 
-------------------------------------------------------------------------
+## Architecture
 
-## 🧱 Architecture
+4-block CNN with progressive feature extraction:
 
-4-stage CNN feature extractor:
+```
+Conv(1→64) → ReLU → BN → MaxPool → Dropout(0.25)
+Conv(64→128, 5×5) → ReLU → BN → MaxPool → Dropout(0.25)
+Conv(128→256) → ReLU → BN → MaxPool → Dropout(0.25)
+Conv(256→512) → ReLU → BN → MaxPool → Dropout(0.25)
+→ Flatten → Linear(4608, 256) → Linear(256, 512) → Linear(512, 7)
+```
 
-Conv(1→64) → ReLU → BN → MaxPool → Dropout\
-Conv(64→128, 5×5) → ReLU → BN → MaxPool → Dropout\
-Conv(128→256) → ReLU → BN → MaxPool → Dropout\
-Conv(256→512) → ReLU → BN → MaxPool → Dropout\
-→ Flatten → FC → FC → FC(7 classes)
+- **Loss:** CrossEntropyLoss with inverse-frequency class weights
+- **Optimizer:** Adam (lr=5e-4)
+- **Scheduler:** ReduceLROnPlateau - halves lr after 3 epochs without val accuracy improvement
 
-**Training setup** - Loss: CrossEntropy (with class weights) -
-Optimizer: Adam (lr = 5e-4) - Scheduler: ReduceLROnPlateau
+## Setup
 
-------------------------------------------------------------------------
+```bash
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+```
 
-## ⚙️ Setup
+## Usage
 
-python -m venv .venv\
-source .venv/bin/activate \# Windows:
-.venv`\Scripts`{=tex}`\activate  `{=tex} pip install -r requirements.txt
+**Train:**
+```bash
+python emotion_detector.py --mode train --data_dir path/to/fer2013
+```
 
-------------------------------------------------------------------------
+**Evaluate (confusion matrix + classification report):**
+```bash
+python emotion_detector.py --mode evaluate --data_dir path/to/fer2013
+```
 
-## 🚀 Usage
+**Prediction gallery (10 sample predictions):**
+```bash
+python emotion_detector.py --mode gallery --data_dir path/to/fer2013
+```
 
-Train: python emotion_detector.py --mode train --data_dir
-path/to/fer2013
+## Outputs
 
-Evaluate: python emotion_detector.py --mode evaluate --data_dir
-path/to/fer2013
+| File | Description |
+|------|-------------|
+| `best_fer_cnn.pt` | Best model checkpoint by val accuracy |
+| `training_curves.png` | Accuracy and loss curves side by side |
+| `confusion_matrix.png` | Per-class confusion heatmap |
+| `prediction_gallery.png` | 10 sample predictions (green = correct, red = wrong) |
 
-Grad-CAM: python emotion_detector.py --mode gradcam --data_dir
-path/to/fer2013
+## Notes
 
-Webcam: python emotion_detector.py --mode webcam --data_dir
-path/to/fer2013
+- Val accuracy plateaus around 66–67% - this is expected for a plain CNN on FER-2013. The dataset has noisy labels and very low resolution (48×48), which limits the ceiling for single-model approaches.
+- The `Disgust` class consistently has the lowest recall due to severe underrepresentation (~500 samples vs ~7000 for Happy). Class weighting partially compensates but doesn't fully close the gap.
+- For higher accuracy, consider transfer learning from a pretrained face model or a Vision Transformer backbone.
 
-Press 'q' to quit webcam.
+## Acknowledgements
 
-------------------------------------------------------------------------
-
-## 📊 Outputs
-
--   best_fer_cnn.pt --- Best model checkpoint\
--   training_curves.png --- Accuracy + loss curves\
--   confusion_matrix.png --- Per-class performance
-
-------------------------------------------------------------------------
-
-## 🎯 Notes
-
--   Accuracy stabilises around 66--67%\
--   Disgust class has lowest recall\
--   Dataset is noisy and low resolution
-
-------------------------------------------------------------------------
-
-## 🙏 Acknowledgements
-
-FER-2013 dataset (ICML 2013 workshop)\
-https://www.kaggle.com/datasets/msambare/fer2013
+- FER-2013 dataset: originally from the ICML 2013 Challenges in Representation Learning workshop
+- Kaggle mirror: https://www.kaggle.com/datasets/msambare/fer2013
