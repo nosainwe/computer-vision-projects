@@ -384,7 +384,7 @@ If you use this as a learning reference:
   author       = {sihab},
   title        = {CLIP from Scratch: A Ground-Up Contrastive Learning Implementation},
   year         = {2025},
-  howpublished = {\url{https://github.com/<your-username>/clip-from-scratch}}
+  howpublished = {\url{https://github.com/<nosainwe>/clip-from-scratch}}
 }
 ```
 
