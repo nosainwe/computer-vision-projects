@@ -1,129 +1,166 @@
-# 🕵️ CCTV Anomaly Detection (ConvLSTM Autoencoder)
+# 🕵️ CCTV Anomaly Detection, notebook version
 
-Unsupervised anomaly detection for surveillance videos using a **ConvLSTM Autoencoder**.
+This project rebuilds the original ConvLSTM autoencoder script as a **teaching-first Jupyter notebook**.
 
-The model learns to **reconstruct normal video clips**. When something unusual happens, reconstruction gets worse, and the **reconstruction error spikes** those high-error frames are flagged as anomalies.
+It does not just run the model. It walks through the working idea from the ground up:
 
-> ⚠️ **Responsible use**
-> This is for learning and defensive/security research. Make sure you have permission to use any footage, and follow privacy laws in your location.
+- inspect the dataset and folder structure
+- read and sample video frames
+- explain tensor shapes in plain English
+- train a ConvLSTM autoencoder on normal clips
+- compute reconstruction error on a test clip
+- plot anomaly scores
+- save output figures for GitHub
 
----
+## Why this version is better than the old script
 
-## 📦 Dataset
-- **Real Time Anomaly Detection in CCTV Surveillance** (Kaggle dataset)  
-  https://www.kaggle.com/datasets/webadvisor/real-time-anomaly-detection-in-cctv-surveillance
+The old `main.py` is useful as a quick demo, but it has a few weak points:
 
-This dataset contains videos across multiple categories (normal events + different anomaly classes). 
+- it hard-codes one training video and one test video
+- it assumes `roadaccidents` can act as a normal class
+- it uses a hand-picked threshold without learning it from normal data
+- it hides too much of the data handling from view
 
-### Expected folder structure
+This notebook fixes that.
 
-After downloading and extracting, place the dataset folder inside this project as `data/` (keep the dataset’s original class folders):
+It is built for learning first, then extension.
 
-```text
-data/
-├── roadaccidents/
-├── assault/
-├── burglary/
-├── fighting/
-├── explosion/
-└── ...
-```
-
-> The exact class folder names may differ slightly depending on the dataset version you download.
-
----
-
-## ⚙️ Setup
-
-### 1) Create a virtual environment (recommended)
-
-```bash
-python -m venv .venv
-# Windows:
-# .venv\Scripts\activate
-# macOS/Linux:
-source .venv/bin/activate
-```
-
-### 2) Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 3) Download the dataset
-
-Download from Kaggle (link above), then extract into the project root as:
+## Recommended folder structure
 
 ```text
-./data/
+cctv-anomaly-detection/
+├── cctv_anomaly_detection_teaching_notebook.ipynb
+├── README.md
+├── requirements.txt
+├── data/
+│   ├── normal/
+│   │   ├── normal_video_01.mp4
+│   │   ├── normal_video_02.mp4
+│   │   └── ...
+│   ├── assault/
+│   ├── burglary/
+│   ├── fighting/
+│   ├── explosion/
+│   └── ...
+└── outputs/
+    ├── plots/
+    ├── frames/
+    ├── gifs/
+    └── models/
 ```
 
----
+## Dataset
 
-## 🚀 Usage
+Source dataset used in the original project:
 
-Run the main script:
+**Real Time Anomaly Detection in CCTV Surveillance**  
+Kaggle: `https://www.kaggle.com/datasets/webadvisor/real-time-anomaly-detection-in-cctv-surveillance`
 
-```bash
-python main.py
+After downloading, place the files inside `data/`.
+
+### Important note about “normal” data
+
+Do not blindly train on a folder like `roadaccidents/` and call it normal.
+
+For anomaly detection, define a separate `data/normal/` folder and place clips there that represent ordinary behaviour.  
+That gives the model a fair target to learn.
+
+## What the notebook covers
+
+### 1. Dataset inspection
+The notebook scans the `data/` folder, counts video files, and shows sample names.
+
+### 2. Video loading
+It reads videos with OpenCV, resizes frames, converts BGR to RGB, and normalises pixel values to `[0, 1]`.
+
+### 3. Frame visualisation
+It shows sampled frames before training so you can inspect what the model is actually learning from.
+
+### 4. ConvLSTM autoencoder
+The notebook builds a small ConvLSTM autoencoder that learns spatiotemporal patterns in normal clips.
+
+### 5. Training
+It stacks clips into a training tensor shaped like:
+
+```python
+(batch, time, height, width, channels)
 ```
 
-### What the script does
+Example:
 
-A typical baseline flow looks like this:
+```python
+(8, 16, 128, 128, 3)
+```
 
-1. **Load a “normal” video clip** (for example from `roadaccidents/` or a “normal” category).
-2. Extract a short clip of **N frames** (e.g., 16 frames) and resize them (e.g., **128×128**).
-3. Train a **ConvLSTM Autoencoder** to reconstruct those frames (self-reconstruction).
-4. Load a **test video** (e.g., a different category such as `assault/`).
-5. Compute per-frame **reconstruction error** (e.g., MSE).
-6. Plot the error curve and flag frames above a **threshold** as anomalies.
+### 6. Reconstruction error
+For a test clip, the model reconstructs each frame and computes frame-wise MSE.
 
-> You can change the train/test video paths inside `main.py` to try different categories.
+Low MSE means the frame looks familiar.  
+High MSE means the model struggled, which may indicate unusual behaviour.
 
----
+### 7. Thresholding
+Instead of relying only on a hand-tuned threshold, the notebook estimates one from the distribution of reconstruction errors on normal training clips.
 
-## 🧠 How it works (simple explanation)
+### 8. Saved outputs
+The notebook saves:
 
-1. **Frame extraction:** sample a fixed-length clip (e.g., 16 frames).
-2. **Autoencoder training:** ConvLSTM learns the spatiotemporal pattern of “normal”.
-3. **Reconstruction error:** for each frame (or clip), compute MSE:
-   - low error → looks like what the model learned
-   - high error → looks unusual (potential anomaly)
-4. **Thresholding:** flag frames where error > threshold.
+- training loss plot
+- anomaly score plot
+- selected test frames
+- trained model file
 
----
+This makes it easier to upload proof of results to GitHub.
 
-## 📊 Results (what you should expect)
+## Run it
 
-This method usually behaves like this:
-- It reconstructs the training “normal” scene well (low error).
-- When the test clip contains different motion/behaviour, error increases.
+Launch Jupyter and open:
 
+```text
+cctv_anomaly_detection_teaching_notebook.ipynb
+```
 
-### Important limitations
-This simple baseline can trigger “false anomalies” when:
-- lighting changes suddenly (night/day, flicker)
-- camera shakes / zoom changes
-- heavy compression artifacts
-- the “normal” clip is too short or too specific (overfitting)
+Then run the notebook top to bottom.
 
-If your script trains on a **single clip**, expect brittle behaviour, it’s great for learning, but not production-ready.
+## Good GitHub practice
 
----
+When you push this project, include:
 
-## 🛠️ Ideas to improve it
+- the notebook
+- the updated README
+- 2 to 4 output images under `outputs/plots/` or `outputs/frames/`
+- a short note on which videos were used for training and testing
 
-- Train on **many normal clips**, not just one.
-- Use a **regularity score** rather than a hard threshold.
-- Try **prediction-based** models (predict future frames instead of reconstructing).
-- Add evaluation: AUC / ROC using labelled anomaly intervals (if available).
-- Use a stronger backbone (3D CNN encoder + ConvLSTM, or Transformers).
+That matters. Otherwise it just looks like untested code.
 
----
+## Limits of this baseline
 
-## 🙏 Acknowledgements
+This is a learning baseline, not a production anomaly detector.
 
-- Dataset: Kaggle - **Real Time Anomaly Detection in CCTV Surveillance** 
-- Inspired by classic video anomaly detection work using reconstruction error + spatiotemporal models.
+It can break when:
+
+- lighting changes hard
+- the camera shakes
+- compression artefacts are strong
+- the model sees too few normal clips
+- the threshold is chosen badly
+
+## What to build next
+
+The next sensible upgrades are:
+
+- sliding-window clip extraction
+- training on many normal videos
+- a normal-only validation split for threshold tuning
+- ROC / AUC if labels exist
+- stronger video backbones
+
+## Future reuse
+
+You can reuse this same notebook structure for:
+
+- MRI anomaly detection
+- X-ray classification notebooks
+- microscopy pipelines
+- industrial inspection videos
+
+Only the data loader and model head change. The teaching structure should stay almost the same.
