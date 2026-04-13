@@ -28,6 +28,7 @@ This repository demonstrates a practical understanding of:
 ---
 
 ## 👀 What You'll See When You Run It
+![OpenAR HUD Demo](person.png)
 Two windows will appear on your screen:
 1. 🖥️ **"Computer Vision (Backend)"** - A normal webcam view with a single best-detection box drawn.
 2. 🥽 **"OpenAR Glasses View (128x64)"** - A pixelated black-and-white HUD rendered on a 128×64 canvas.
