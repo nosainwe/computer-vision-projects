@@ -1,40 +1,73 @@
-# Arm Raise Rehabilitation Analysis
+# 🏋️ Arm Raise Rehabilitation Analysis
 
-A notebook-based computer vision project for analysing **arm raise exercises** from blurred rehabilitation videos.
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
+![MediaPipe](https://img.shields.io/badge/MediaPipe-0.10.30-orange)
+![OpenCV](https://img.shields.io/badge/OpenCV-Video%20Processing-green)
+![Status](https://img.shields.io/badge/status-learning%20project-informational)
+![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
-This project uses **MediaPipe Pose** to extract upper-limb landmarks from video, then turns those landmarks into simple movement signals such as shoulder angle, elbow angle, wrist trajectory, and repetition structure.
+A notebook-based computer vision project for analysing **arm raise rehabilitation exercises** from video.
 
-I built it as a small, focused movement-analysis pipeline, not as a generic pose demo. The point is to move from raw video to something I can actually inspect and talk about: range, path, repetition, and differences between more correct and less correct movement.
+This project uses **MediaPipe Pose** to extract upper-limb landmarks frame by frame, then turns those landmarks into simple movement signals such as **shoulder angle**, **elbow angle**, **wrist trajectory**, and **repetition structure**.
 
-## Why I built this
+I built it as a small, focused movement-analysis pipeline, not as a generic pose demo. The point is to move from raw video to something I can inspect and talk about properly: movement range, path, repetition, and visible differences between **correct** and **incorrect** exercise patterns.
 
-A training system can show an exercise. That part is easy to say and harder to do well. The bigger question comes after that:
+---
 
-**How do I measure what the person actually did?**
+## 🎯 Project goal
 
-That is the problem this notebook starts to address.
+A training system can show a movement. That is only half the job.
 
-Using arm raise videos, I wanted to check whether a lightweight vision pipeline could pull out simple movement features that might help separate **correct** and **incorrect** exercise patterns.
+The harder part is this: **how do I measure what the person actually did?**
 
-That makes this project useful beyond a pose-estimation screenshot. It starts to act like a behavioural analysis layer.
+This notebook is my first answer to that problem. Using arm raise videos, I test whether a lightweight vision pipeline can extract movement features that help distinguish **better** and **worse** exercise execution.
 
-## Dataset
+So this repo is not about drawing a skeleton on a person and calling it done. It is about building a first behavioural analysis layer from video.
+
+---
+
+## 🧠 What the project does
+
+The notebook follows this pipeline:
+
+1. Load a small set of arm raise videos
+2. Run **MediaPipe Pose** on each frame
+3. Extract upper-limb landmarks such as:
+   - shoulder
+   - elbow
+   - wrist
+   - hip
+4. Save the landmark coordinates into a structured table
+5. Compute movement features from those landmarks
+6. Compare **correct** and **incorrect** arm raise videos
+
+### Movement features used
+
+This baseline version computes:
+
+- 📈 **Shoulder angle over time**
+- 📉 **Elbow angle over time**
+- ✋ **Wrist trajectory**
+- 📏 **Wrist path length**
+- 🔄 **Simple repetition counting from angle peaks**
+- 📊 **Per-video summary features** for group comparison
+
+These are not clinical measurements. They are low-cost movement proxies from monocular RGB video.
+
+---
+
+## 📦 Dataset
 
 This project uses a small subset of the **WLU Rehabilitation Posture** dataset from Kaggle.
-
-Dataset page:
-`WLU Rehabilitation Posture`
 
 For this version, I only used:
 
 - **5 videos** from `Arm Raise Correct`
 - **5 videos** from `Arm Raise Incorrect`
 
-That small scope is deliberate. It keeps the notebook readable, the outputs easier to inspect, and the movement comparison easier to explain.
+That narrow scope is deliberate. It keeps the notebook readable, the outputs easier to inspect, and the movement comparison easier to explain.
 
-### Folder layout
-
-Place the dataset like this:
+### Expected folder structure
 
 ```text
 rehab-pose-analysis/
