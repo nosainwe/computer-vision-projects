@@ -370,6 +370,3 @@ ipykernel
 
 ---
 
-## 📜 Licence
-
-Add your preferred licence here, or keep it aligned with the parent repository licence.
