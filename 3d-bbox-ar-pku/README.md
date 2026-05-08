@@ -86,8 +86,7 @@ python -m src.visualize_3d_bbox --data_dir data/pku-autonomous-driving --row 400
 
 ---
 
-## 🧠 How it works (plain English)
-
+## 🧠 How it works 
 1. **Read pose labels** from `PredictionString` in `train.csv`  
    Each car instance has:
    - rotation (yaw, pitch, roll)
