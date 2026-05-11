@@ -371,7 +371,6 @@ That doesn’t kill the project. It just sets the right expectations.
 | [bitsandbytes](https://github.com/TimDettmers/bitsandbytes) | 4-bit quantisation backend |
 | [OpenCLIP](https://github.com/mlfoundations/open_clip) | Useful implementation reference points |
 
-This is an independent learning project. It is not affiliated with OpenAI, HuggingFace, or the authors above.
 
 ---
 
