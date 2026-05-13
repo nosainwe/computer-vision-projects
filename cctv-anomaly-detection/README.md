@@ -273,7 +273,3 @@ This project is for learning and defensive computer vision research.
 Any use of CCTV or surveillance footage should respect privacy, consent, and local law.
 
 ---
-
-## Repository note
-
-This notebook-based version replaces the earlier script-first workflow with a more transparent and explainable process. The focus is understanding, visible outputs, and cleaner project presentation.
