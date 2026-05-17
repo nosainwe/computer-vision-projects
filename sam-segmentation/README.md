@@ -20,7 +20,7 @@ This project demonstrates how to use SAM with:
 
 ---
 
-## 🧠 How SAM works (brief but accurate)
+## 🧠 How SAM works 
 
 SAM has three main parts:
 
