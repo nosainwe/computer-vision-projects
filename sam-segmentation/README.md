@@ -47,8 +47,7 @@ SAM was trained on the **SA‑1B** dataset (large-scale segmentation masks) usin
 
 ---
 
-## 🗂️ Repository structure (suggested)
-
+## 🗂️ Repository structure 
 ```text
 sam-segmentation/
 ├── sam_segmentation.ipynb
