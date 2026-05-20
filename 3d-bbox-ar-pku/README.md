@@ -58,7 +58,7 @@ pip install -r requirements.txt
 
 ## 🚀 Run it
 
-### Option A — Notebook
+### Option A - Notebook
 
 Open and run:
 
@@ -68,7 +68,7 @@ notebooks/3d_bounding_box_and_augmented_reality_pku.ipynb
 
 ✅ This notebook is the Kaggle version adapted to **local paths** (`data/pku-autonomous-driving/...`).
 
-### Option B — CLI demo 
+### Option B - CLI demo 
 
 Render 3D bounding boxes for one row from `train.csv`:
 
@@ -117,4 +117,4 @@ python -m src.visualize_3d_bbox --data_dir data/pku-autonomous-driving --row 400
 
 ## 🙏 Acknowledgements
 
-- Dataset and CAD models: Kaggle competition — **Peking University/Baidu - Autonomous Driving**
+- Dataset and CAD models: Kaggle competition - **Peking University/Baidu - Autonomous Driving**
