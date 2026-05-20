@@ -41,7 +41,7 @@ Two windows will appear on your screen:
 ---
 
 ## ⚙️ Requirements
-* 🐍 **Python 3.9+** (recommended)
+* 🐍 **Python 3.9+**
 * 📹 **A connected webcam**
 * 🧠 **Ultralytics YOLO weights** (download will happen automatically on the first run; an internet connection is required once).
 
