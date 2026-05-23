@@ -1,4 +1,4 @@
-# 🔍 ViT Vision — Image Classifier
+# 🔍 ViT Vision - Image Classifier
 
 A production-ready, zero-dependency web app that classifies images using **Google's Vision Transformer (ViT)** model via the HuggingFace Inference API.
 
@@ -16,11 +16,11 @@ A production-ready, zero-dependency web app that classifies images using **Googl
 
 - **Drag & drop** any image to classify
 - **Paste** an image from your clipboard (Ctrl+V / Cmd+V)
-- **Camera capture** — take a photo and classify it instantly
-- **Sample images** — one-click demo with built-in examples (no external requests)
-- **ViT Patch Grid toggle** — visualize how ViT slices your image into 14×14 tokens
+- **Camera capture** - take a photo and classify it instantly
+- **Sample images** - one-click demo with built-in examples (no external requests)
+- **ViT Patch Grid toggle** - visualize how ViT slices your image into 14×14 tokens
 - **Top-5 predictions** with animated confidence bars
-- Zero build step — pure HTML/CSS/JS, open `index.html` and go
+- Zero build step - pure HTML/CSS/JS, open `index.html` and go
 
 ---
 
@@ -52,13 +52,13 @@ A production-ready, zero-dependency web app that classifies images using **Googl
 
 ### 2. Open the app
 
-Just open the [live demo](https://nosainwe.github.io/computer-vision-projects/vit-image-classifier/) — no install needed.
+Just open the [live demo](https://nosainwe.github.io/computer-vision-projects/vit-image-classifier/) - no install needed.
 
 Or clone and run locally:
 ```bash
 git clone https://github.com/nosainwe/computer-vision-projects.git
 cd computer-vision-projects/vit-image-classifier
-open index.html   # Mac — or just double-click on Windows/Linux
+open index.html   # Mac - or just double-click on Windows/Linux
 ```
 
 > **No server required.** This is a single static HTML file.
@@ -73,7 +73,7 @@ open index.html   # Mac — or just double-click on Windows/Linux
 
 ## 🏗️ How It Works (ViT Explained)
 
-ViT treats an image the same way a language model treats text — as a **sequence of tokens**.
+ViT treats an image the same way a language model treats text - as a **sequence of tokens**.
 
 ```
 Image (224×224×3)
@@ -97,7 +97,7 @@ Image (224×224×3)
 
 ### Why self-attention beats convolutions here
 
-A CNN's receptive field grows only as layers stack — distant parts of an image only "meet" deep in the network.
+A CNN's receptive field grows only as layers stack - distant parts of an image only "meet" deep in the network.
 
 ViT's self-attention is **global from layer 1**: the patch showing a cat's eye can directly attend to every other patch immediately. This makes ViT especially powerful for long-range dependencies and transfer learning from massive datasets.
 
@@ -140,12 +140,12 @@ Then change `API_URL` in `index.html` to `http://localhost:8000/classify`.
 
 ## 📚 Learn More
 
-- [Vision Transformer paper — Dosovitskiy et al., 2020](https://arxiv.org/abs/2010.11929)
+- [Vision Transformer paper - Dosovitskiy et al., 2020](https://arxiv.org/abs/2010.11929)
 - [HuggingFace model card](https://huggingface.co/google/vit-base-patch16-224)
-- [Vizuara — Vision Transformers article](https://vizuara.substack.com)
+- [Vizuara - Vision Transformers article](https://vizuara.substack.com)
 
 ---
 
 ## 📜 License
 
-MIT — free to use, modify, and deploy.
+MIT - free to use, modify, and deploy.
