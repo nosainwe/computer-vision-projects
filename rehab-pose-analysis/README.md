@@ -300,7 +300,6 @@ For each video, the notebook summarises movement into a small feature set, then 
 
 ## 💡 Why this is useful
 
-I do not see this as pose estimation for its own sake.
 
 I see it as a compact movement-analysis pipeline that could support:
 
