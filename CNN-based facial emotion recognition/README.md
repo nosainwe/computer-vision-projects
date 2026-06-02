@@ -101,3 +101,6 @@ python emotion_detector.py --mode gallery --data_dir path/to/fer2013
 
 - FER-2013 dataset: originally from the ICML 2013 Challenges in Representation Learning workshop
 - Kaggle mirror: https://www.kaggle.com/datasets/msambare/fer2013
+
+## License
+MIT
