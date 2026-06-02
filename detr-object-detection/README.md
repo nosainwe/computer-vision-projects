@@ -107,7 +107,7 @@ For each query:
 - a box head predicts a bounding box `(cx, cy, w, h)` (normalised)
 
 ### Training
-A **Hungarian matching** step assigns predicted queries to ground-truth boxes so that each object is matched once. The loss typically combines:
+A **Hungarian matching** step assigns predicted queries to ground-truth boxes so each object is matched once. The loss typically combines:
 - classification loss
 - L1 box loss
 - GIoU loss
