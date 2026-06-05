@@ -103,4 +103,5 @@ python emotion_detector.py --mode gallery --data_dir path/to/fer2013
 - Kaggle mirror: https://www.kaggle.com/datasets/msambare/fer2013
 
 ## License
-MIT
+MIT 
+license
