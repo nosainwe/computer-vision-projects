@@ -16,7 +16,7 @@ This project demonstrates how to use SAM with:
 **Why SAM is useful:**
 - Works across many object types and environments
 - Doesn’t require task-specific training for basic segmentation
-- Can be used as a “segmentation backbone” inside larger systems (labeling tools, AR, medical, robotics)
+- Can be used as a “segmentation backbone” inside larger systems (labelling tools, AR, medical, robotics)
 
 ---
 
@@ -43,7 +43,7 @@ A lightweight transformer combines:
 - an **IoU quality score** for each mask (to help pick the best one)
 
 ### Training (context)
-SAM was trained on the **SA‑1B** dataset (large-scale segmentation masks) using an annotation pipeline that moves from manual labeling toward automated mask generation.
+SAM was trained on the **SA‑1B** dataset (large-scale segmentation masks) using an annotation pipeline that moves from manual labelling toward automated mask generation.
 
 ---
 
@@ -119,7 +119,7 @@ SAM typically produces strong masks with minimal prompting, especially for clear
 ## 🙏 Acknowledgements
 
 - Paper: **Segment Anything** - Kirillov et al. (2023)
-- SAM model + ecosystem by Meta AI
+- SAM model + by Meta AI
 - Inspiration: Mayank Pratap Singh and Sreedath Panat (article/tutorial)
 
 ---
