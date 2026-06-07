@@ -322,7 +322,7 @@ This is a first-pass notebook. It has obvious limits.
 - Monocular RGB loses depth information
 - The joint angles are simple 2D proxies
 - The sample is small: only **10 videos**
-- Correct and incorrect movement may differ in ways these simple summary features do not fully capture
+- Correct and incorrect movement may differ in ways that these simple summary features do not fully capture
 
 So I would not present this as a finished clinical assessment tool. I would present it as a useful starting point.
 
@@ -332,7 +332,7 @@ So I would not present this as a finished clinical assessment tool. I would pres
 
 If I were taking this further, I would:
 
-- use more than 5 videos per group
+- Use more than 5 videos per group
 - compare both arms where relevant
 - filter landmarks using visibility scores
 - smooth trajectories more carefully
