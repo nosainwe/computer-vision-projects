@@ -1,7 +1,7 @@
 """
 record_demo.py
 --------------
-Generates a short demo of the virtual 128×64 OLED HUD as:
+This generates a short demo of the virtual 128×64 OLED HUD as:
 - demo_oled.mp4
 - demo_oled.gif
 
