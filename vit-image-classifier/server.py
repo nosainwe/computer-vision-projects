@@ -21,7 +21,7 @@ import sys
 
 
 app = Flask(__name__)
-CORS(app)   # without this the browser blocks requests from index.html — same-origin policy
+CORS(app)   # without this, the browser blocks requests from index.html — same-origin policy
 
 MODEL_NAME = "google/vit-base-patch16-224"
 
@@ -53,7 +53,7 @@ def classify():
         # convert("RGB") handles PNGs with alpha channels and grayscale images consistently
         img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
 
-        # processor handles resizing and normalization — don't do it manually before this
+        # processor handles resizing and normalisation — don't do it manually before this
         inputs = processor(images=img, return_tensors="pt")
 
         with torch.no_grad():
@@ -87,5 +87,5 @@ def health():
 if __name__ == "__main__":
     print("\nStarting local inference server at http://localhost:8000")
     print("   Update API_URL in index.html to: http://localhost:8000/classify\n")
-    # debug=False — debug mode auto-reloads on file changes and would reload the 350MB model every time
+    # debug=False — debug mode auto-reloads on file changes, and would reload the 350MB model every time
     app.run(host="0.0.0.0", port=8000, debug=False)
