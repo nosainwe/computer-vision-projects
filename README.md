@@ -85,7 +85,7 @@ If something looks unfinished, that usually means it is. I’d rather leave the 
 
 ---
 
-## Suggested starting points
+## My recommendation
 
 If you want the fastest overview of the repo, start with:
 
