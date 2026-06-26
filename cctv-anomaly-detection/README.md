@@ -248,7 +248,7 @@ This project helped me understand, in a practical way:
 - why file handling and dataset structure break projects faster than model code
 - how ConvLSTM differs from image-only models
 - why reconstruction quality matters in anomaly detection
-- why visible outputs make a GitHub project far more believable than code alone
+- Why visible outputs make a GitHub project far more believable than code alone
 
 ---
 
@@ -259,7 +259,7 @@ Good next steps for this project would be:
 - train on more normal clips
 - sample clips from different parts of each video
 - test across more anomaly categories
-- compare normal and anomaly error distributions more carefully
+- Compare normal and anomaly error distributions more carefully
 - add sliding-window inference for longer videos
 - try stronger spatiotemporal backbones
 - add evaluation against labelled anomaly intervals if available
