@@ -97,7 +97,7 @@ The notebook should:
 
 ---
 
-## 📊 Results (what to expect)
+## 📊 Results 
 
 SAM typically produces strong masks with minimal prompting, especially for clear foreground objects.
 
