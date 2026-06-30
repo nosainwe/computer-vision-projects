@@ -119,7 +119,7 @@ SAM typically produces strong masks with minimal prompting, especially for clear
 ## 🙏 Acknowledgements
 
 - Paper: **Segment Anything** - Kirillov et al. (2023)
-- SAM model + by Meta AI
+- SAM model by Meta AI
 - Inspiration: Mayank Pratap Singh and Sreedath Panat (article/tutorial)
 
 ---
