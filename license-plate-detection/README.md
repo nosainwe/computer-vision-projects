@@ -148,7 +148,7 @@ Performance varies depending on split quality, label conversion, and training se
 
 ---
 
-## 🧰 Further improvements
+## 🧰 Future improvements
 
 - Use a larger backbone (`yolo11s`, `yolo11m`) if your GPU allows
 - Add motion blur, glare, and low-light augmentations for real-world robustness
