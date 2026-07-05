@@ -1,6 +1,6 @@
 # 🔍 ViT Vision - Image Classifier
 
-A production-ready, zero-dependency web app that classifies images using **Google's Vision Transformer (ViT)** model via the HuggingFace Inference API.
+This is a production-ready, zero-dependency web app that classifies images using **Google's Vision Transformer (ViT)** model via the HuggingFace Inference API.
 
 > Built to make the theory from [Vision Transformers](https://vizuara.substack.com) tangible and interactive.
 
