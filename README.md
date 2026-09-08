@@ -1,6 +1,6 @@
 # Computer Vision Projects
 
-A running collection of the computer vision projects I’ve built, tested, broken, fixed, and learned from.
+A running collection of the computer vision projects I have built, tested, broken, fixed, and learned from.
 
 The work here cuts across:
 - object detection
