@@ -5,6 +5,7 @@ A running collection of the computer vision projects I have built, tested, broke
 The work here cuts across:
 - object detection
 - image classification
+- Biomedical image processing
 - segmentation
 - video anomaly detection
 - pose and movement analysis
