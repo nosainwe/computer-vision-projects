@@ -25,7 +25,7 @@ https://www.kaggle.com/datasets/msambare/fer2013
 - 28,709 training samples / 3,589 test samples
 - Class-imbalanced (Disgust is severely underrepresented)
 
-Expected layout after download:
+Recommended file layout:
 
 ```
 fer2013/
