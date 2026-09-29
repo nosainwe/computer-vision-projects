@@ -256,7 +256,7 @@ This lets you test retrieval on your own image-caption candidates.
 
 A normal `torch.save()` workflow is not enough here.
 
-The 4-bit quantised base model does not serialize cleanly if you try to save the full wrapped model directly. That can leave you with checkpoints that either fail silently or cannot reload properly.
+The 4-bit quantised base model does not serialise cleanly if you try to save the full wrapped model directly. That can leave you with checkpoints that either fail silently or cannot reload properly.
 
 ### Correct Saving Approach
 
@@ -302,8 +302,8 @@ The safe route is:
 
 The temperature parameter `τ` changes how sharply the model separates positive and negative pairs.
 
-- Too high: the logits get too soft and the model struggles to separate hard negatives
-- Too low: the logits get too sharp and optimisation can stall
+- Too high: the logits get too soft, and the model struggles to separate hard negatives
+- Too low: the logits get too sharp, and optimisation can stall
 
 The best fix was to make `τ` a learned `nn.Parameter` and let training adjust it.
 
@@ -322,7 +322,7 @@ It cannot answer:
 
 If you want generation, you need a decoder-style setup, such as the kind of bridge used in models like LLaVA.
 
-### 4. A causal LM can work as text encoder, but it is not ideal
+### 4. A causal LM can work as a text encoder, but it is not ideal
 
 This project uses last-token pooling from a decoder-style language model. It works, but it is not the same as using a bidirectional text encoder built for representation learning.
 
