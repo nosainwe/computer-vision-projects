@@ -5,7 +5,7 @@ A **binary image classifier** that predicts whether a CCTV / surveillance frame 
 Built with **TensorFlow / Keras** using **transfer learning** (MobileNetV2).
 
 > ⚠️ **Responsible use**
-> This project is for **computer‑vision learning and defensive/security research**. Don’t use it to support harm, targeting, or illegal surveillance.
+> This project is for **computer‑vision learning and defensive/security research**. I do not support harm, targeting, or illegal surveillance.
 
 ---
 
