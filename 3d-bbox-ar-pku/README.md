@@ -11,7 +11,7 @@ using the **PKU/Baidu Autonomous Driving** Kaggle competition data (intrinsics +
 
 ## 📦 Dataset
 
-This project uses a dataset from kaggle:
+This project uses a dataset from Kaggle:
 - **Peking University/Baidu - Autonomous Driving**
 
 You’ll need:
@@ -100,11 +100,11 @@ python -m src.visualize_3d_bbox --data_dir data/pku-autonomous-driving --row 400
 4. Transform corners into camera coordinates and project onto the image using the **camera intrinsics** matrix.
 
 5. Draw the 2D lines that represent the 3D box.  
-   (Optional) load CAD vertices/triangles from `car_models_json/` and project them too.
+   (Optional) Load CAD vertices/triangles from `car_models_json/` and project them too.
 
 ---
 
-## 📌 Notes / limitations 
+## 📌 Notes/limitations 
 
 - This is a **visualisation** pipeline, not a full detection model.
 - Results depend heavily on:
