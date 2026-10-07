@@ -74,7 +74,7 @@ The notebook will typically:
 
 ---
 
-## 📊 Results (what to expect)
+## 📊 Results
 
 The pre‑trained COCO model usually works well “out of the box” for common classes like:
 - person
