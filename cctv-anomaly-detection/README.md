@@ -4,7 +4,7 @@ A notebook-based learning project for unsupervised anomaly detection in CCTV foo
 
 The model learns what **normal video behaviour** looks like by trying to reconstruct short clips from normal CCTV footage. When it sees something that does not fit that learned pattern, reconstruction gets worse, and the **reconstruction error** goes up. That error becomes the anomaly signal.
 
-This project was rebuilt from a simple script into a more transparent notebook workflow so each step can be inspected, explained, and saved as visible output.
+This project was rebuilt from a simple script into a more comprehensible notebook workflow so each step can be inspected, explained, and saved as visible output.
 
 ---
 
