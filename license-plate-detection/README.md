@@ -3,7 +3,7 @@
 Detect **vehicle license plates** in videos using a fine-tuned **YOLO11n** model (Ultralytics), with optional **EasyOCR** to read the plate text directly from detections.
 
 > 🔒 **Privacy note**
-> License plates are personal data in many places. Use this project responsibly, and only on footage you have the right to process.
+> License plates are personal data in many places. Use this project responsibly.
 
 ---
 
