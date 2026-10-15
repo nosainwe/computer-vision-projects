@@ -148,7 +148,7 @@ After ~20 epochs, a typical baseline can reach strong validation performance dep
 
 ---
 
-## 🧰 Tips to improve performance
+## 🧰 Future plans
 
 - ✅ Use **class rebalancing** if a few classes dominate
 - ✅ Try `yolo11s` or `yolo11m` if your GPU can handle it
