@@ -71,7 +71,7 @@ open index.html   # Mac - or just double-click on Windows/Linux
 
 ---
 
-## 🏗️ How It Works (ViT Explained)
+## 🏗️ How It Works
 
 ViT treats an image the same way a language model treats text - as a **sequence of tokens**.
 
