@@ -44,11 +44,7 @@ These are not clinical measurements. They are lightweight movement proxies extra
 
 ---
 
-## 🎯 Why I built this
-
-A system can show an exercise. That is only half the job.
-
-The harder question is this: **how do I measure what the person actually did?**
+## 🎯The main question is: **how do I measure what the person actually did?**
 
 This notebook is my first answer to that problem. I wanted a simple pipeline that could turn rehabilitation-style arm raise videos into measurable movement signals, then check whether those signals showed meaningful differences between **better** and **worse** execution.
 
