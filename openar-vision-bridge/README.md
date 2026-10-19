@@ -3,7 +3,6 @@
 
 ---
 
-## 🔍 What This Is
 This project demonstrates a practical "bridge" between modern computer vision and embedded display constraints. 
 
 Instead of showing full-resolution bounding boxes (which tiny wearable displays cannot render), the script:
