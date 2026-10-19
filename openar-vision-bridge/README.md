@@ -14,7 +14,7 @@ Instead of showing full-resolution bounding boxes (which tiny wearable displays 
 ---
 
 ## 💡 Why This Is Useful
-Small OLEDs used in hobby AR and wearable projects (like the SSD1306) are often limited to 128×64 pixels. This means you cannot simply "stream vision." Instead, you must distill information into:
+Small OLEDs used in hobby AR and wearable projects (like the SSD1306) are often limited to 128×64 pixels. This means you cannot simply "stream vision." Instead, you must distil information into:
 * 🏷️ A short label
 * 📊 A confidence indicator
 * 🎯 Simple shapes (crosshairs, reticles, bars, icons)
