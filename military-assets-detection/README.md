@@ -9,7 +9,7 @@ Detect objects such as **vehicles, personnel, and equipment** in aerial / survei
 
 ## 📦 Dataset
 
-✅ Use this active Kaggle dataset instead (YOLO format):
+✅ Use this active Kaggle dataset:
 - **Military Assets Dataset (12 Classes – YOLO format)**:  
  [ https://www.kaggle.com/datasets/rawsi18/military-assets-dataset-12-classes-yolo8-format](https://www.kaggle.com/datasets/rupankarmajumdar/amad-5-aerial-military-asset-detection-dataset)
 
